@@ -13,6 +13,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use FilamentTiptapEditor\TiptapEditor;
 
 class PartnerResource extends Resource
 {
@@ -24,18 +25,39 @@ class PartnerResource extends Resource
     {
         return $form
             ->schema([
-                LocalesAwareTranslate::make()
-                    ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required(),
-                        \FilamentTiptapEditor\TiptapEditor::make('description'),
+                Forms\Components\Grid::make([
+                    'default' => 1,
+                    'sm' => 6,
+                ])->schema([
+                    Forms\Components\Group::make([
+                        LocalesAwareTranslate::make()
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->required(),
+                                TiptapEditor::make('description'),
+                            ]),
+                        Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\TextInput::make('url')
+                                    ->url()
+                                    ->required(),
+                            ]),
+                    ])->columnSpan([
+                        'default' => 1,
+                        'sm' => 4,
                     ]),
-                CuratorPicker::make('logo_id')
-                    ->relationship('logo', 'id'),
-                Forms\Components\TextInput::make('url')
-                    ->url()
-                    ->required(),
-            ])->columns(1);
+                    Forms\Components\Group::make([
+                        Forms\Components\Section::make()
+                            ->schema([
+                                CuratorPicker::make('logo_id')
+                                    ->relationship('logo', 'id'),
+                            ]),
+                    ])->columnSpan([
+                        'default' => 1,
+                        'sm' => 2,
+                    ]),
+                ]),
+            ]);
     }
 
     public static function table(Table $table): Table
