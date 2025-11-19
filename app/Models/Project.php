@@ -11,9 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Project extends Model
 {
+    use HandlesTranslatableAttributes;
+
     /** @use HasFactory<\Database\Factories\ProjectFactory> */
     use HasFactory;
-    use HandlesTranslatableAttributes;
     use HasUlids;
 
     protected $fillable = [
@@ -51,5 +52,10 @@ class Project extends Model
     public function logo(): BelongsTo
     {
         return $this->belongsTo(Media::class);
+    }
+
+    public function isReferenced(): bool
+    {
+        return $this->partners()->exists();
     }
 }
