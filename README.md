@@ -24,6 +24,12 @@ ULIDs are used as the default ID type.
     cp .env.example .env
     ```
 
+1. Set the `WHATSAPP_NUMBER` in `.env` file:
+
+    ```
+    WHATSAPP_NUMBER=628123456789
+    ```
+
 1. Assign Super User(s) by assigning `Fortify` username(s) (default to email) in `.env` file:
 
     ```
