@@ -33,12 +33,15 @@ class PartnerResource extends Resource
                         LocalesAwareTranslate::make()
                             ->schema([
                                 Forms\Components\TextInput::make('name')
+                                    ->label(__('partner.resource.name'))
                                     ->required(),
-                                TiptapEditor::make('description'),
+                                TiptapEditor::make('description')
+                                    ->label(__('partner.resource.description')),
                             ]),
                         Forms\Components\Section::make()
                             ->schema([
                                 Forms\Components\TextInput::make('url')
+                                    ->label(__('partner.resource.url'))
                                     ->url()
                                     ->required(),
                             ]),
@@ -50,6 +53,7 @@ class PartnerResource extends Resource
                         Forms\Components\Section::make()
                             ->schema([
                                 CuratorPicker::make('logo_id')
+                                    ->label(__('partner.resource.logo'))
                                     ->relationship('logo', 'id'),
                             ]),
                     ])->columnSpan([
@@ -67,9 +71,11 @@ class PartnerResource extends Resource
                 CuratorColumn::make('logo')
                     ->size(40),
                 TranslatableTextColumn::make('name')
+                    ->label(__('partner.resource.name'))
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('url')
+                    ->label(__('partner.resource.url'))
                     ->searchable(),
             ])
             ->actions([
@@ -80,6 +86,16 @@ class PartnerResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getModelLabel(): string
+    {
+        return trans_choice('partner.resource.model_label', 1);
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return trans_choice('partner.resource.model_label', 2);
     }
 
     public static function getPages(): array
