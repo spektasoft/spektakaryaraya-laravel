@@ -23,8 +23,8 @@ export default {
     theme: {
         extend: {
             colors: {
-                primary: colors.vermilion,
-                secondary: colors["web-orange"],
+                primary: colors.copper,
+                secondary: colors.teal,
             },
             fontFamily: {
                 sans: ["Figtree", ...defaultTheme.fontFamily.sans],

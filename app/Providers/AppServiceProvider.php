@@ -49,8 +49,8 @@ class AppServiceProvider extends ServiceProvider
     {
         DatabaseNotifications::trigger('filament.notifications.database-notifications-trigger');
         FilamentColor::register([
-            'primary' => Color::Vermilion,
-            'secondary' => Color::WebOrange,
+            'primary' => Color::Copper,
+            'secondary' => Color::Teal,
         ]);
         FilamentIcon::register([
             'panels::pages.dashboard.navigation-item' => 'heroicon-o-building-library',
