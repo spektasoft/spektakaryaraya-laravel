@@ -28,6 +28,8 @@ export default {
             },
             fontFamily: {
                 sans: ["Figtree", ...defaultTheme.fontFamily.sans],
+                logo: ["Train One"],
+                heading: ["Playfair Display"],
             },
         },
     },
