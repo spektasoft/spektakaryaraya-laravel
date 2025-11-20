@@ -21,7 +21,7 @@ class PartnersTable extends Component implements HasForms, HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(Partner::query()->orderBy('name', 'asc'))
+            ->query(Partner::query()->orderBy('name', 'asc')->take(12))
             ->columns([
                 Stack::make([
                     Tables\Columns\ImageColumn::make('logo.path')
@@ -38,9 +38,10 @@ class PartnersTable extends Component implements HasForms, HasTable
                 ])->extraAttributes(['class' => 'bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10']),
             ])
             ->contentGrid([
+                'default' => 1,
                 'sm' => 2,
                 'md' => 3,
-                'xl' => 4,
+                'lg' => 4,
             ])
             ->paginated(false);
     }

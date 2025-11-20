@@ -22,7 +22,7 @@ class ProjectsTable extends Component implements HasForms, HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(Project::query()->where('status', Status::Publish)->orderBy('start_date', 'desc'))
+            ->query(Project::query()->where('status', Status::Publish)->orderBy('start_date', 'desc')->take(12))
             ->columns([
                 Stack::make([
                     Tables\Columns\ImageColumn::make('logo.path')
@@ -43,8 +43,10 @@ class ProjectsTable extends Component implements HasForms, HasTable
                 ])->space(0)->extraAttributes(['class' => 'bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden']),
             ])
             ->contentGrid([
-                'md' => 2,
-                'xl' => 3,
+                'default' => 1,
+                'sm' => 2,
+                'md' => 3,
+                'lg' => 4,
             ])
             ->actions([
                 // Tables\Actions\ViewAction::make(),
