@@ -15,7 +15,11 @@
                 <div class="flex flex-col items-center gap-4 mt-10 sm:flex-row sm:justify-center">
                     <x-filament::button tag="a" href="https://wa.me/{{ config('services.whatsapp.number') }}"
                         target="_blank" size="xl" class="w-full sm:w-auto">
-                        {{ __('landing.hero.contact_us') }}
+                        <div class="flex items-center gap-2">
+                            <x-icons.whatsapp class="size-6 fill-current" />
+                            {{ __('landing.hero.contact_us') }}
+                            <x-filament::icon icon="heroicon-m-arrow-top-right-on-square" class="size-3" />
+                        </div>
                     </x-filament::button>
                     <x-filament::button tag="a" href="#projects" color="gray" size="xl"
                         icon="heroicon-m-arrow-long-right" icon-position="after" class="w-full sm:w-auto">
@@ -71,7 +75,11 @@
                         <x-filament::button tag="a"
                             href="https://wa.me/{{ config('services.whatsapp.number') }}" target="_blank"
                             size="xl">
-                            {{ __('landing.cta.contact_us') }}
+                            <div class="flex items-center gap-2">
+                                <x-icons.whatsapp class="size-6 fill-current" />
+                                {{ __('landing.cta.contact_us') }}
+                                <x-filament::icon icon="heroicon-m-arrow-top-right-on-square" class="size-3" />
+                            </div>
                         </x-filament::button>
                     </div>
                 </div>
