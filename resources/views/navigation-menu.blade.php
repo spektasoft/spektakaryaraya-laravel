@@ -43,11 +43,8 @@
                 </div>
 
                 <!-- Contact Us -->
-                <div class="relative flex items-center">
-                    <a href="https://wa.me/{{ config('services.whatsapp.number') }}" target="_blank"
-                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 dark:bg-gray-200 dark:text-gray-800 dark:hover:bg-white dark:active:bg-gray-300">
-                        {{ __('navigation-menu.contact_us') }}
-                    </a>
+                <div class="relative hidden sm:flex items-center">
+                    <x-navigation-menu.contact-us />
                 </div>
 
                 <!-- Menu -->
