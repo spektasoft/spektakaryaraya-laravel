@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('partner_project', function (Blueprint $table) {
-            $table->ulid('id')->primary();
-            $table->foreignUlid('project_id')->constrained()->cascadeOnDelete();
-            $table->foreignUlid('partner_id')->constrained()->cascadeOnDelete();
-            $table->unique(['project_id', 'partner_id']);
+            $table->primary(['partner_id', 'project_id']);
+            $table->foreignUlid('partner_id')->constrained();
+            $table->foreignUlid('project_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

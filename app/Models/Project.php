@@ -15,6 +15,7 @@ class Project extends Model
 
     /** @use HasFactory<\Database\Factories\ProjectFactory> */
     use HasFactory;
+
     use HasUlids;
 
     protected $fillable = [
@@ -43,7 +44,7 @@ class Project extends Model
      */
     public function partners(): BelongsToMany
     {
-        return $this->belongsToMany(Partner::class)->withPivot('id');
+        return $this->belongsToMany(Partner::class);
     }
 
     /**
