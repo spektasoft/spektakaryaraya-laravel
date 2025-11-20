@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-        'contact_us' => 'Hubungi Kami',
+    'contact_us' => 'Hubungi Kami',
     'language_switcher' => [
         'language' => 'Bahasa',
         'open_language_switcher' => 'Buka Pengubah Bahasa',
@@ -18,5 +18,6 @@ return [
         'open_menu' => 'Buka Menu',
         'profile' => 'Profil',
         'title' => 'Menu',
+        'theme' => 'Tema',
     ],
 ];

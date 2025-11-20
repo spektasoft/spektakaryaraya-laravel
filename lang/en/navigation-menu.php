@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-        'contact_us' => 'Contact Us',
+    'contact_us' => 'Contact Us',
     'language_switcher' => [
         'language' => 'Language',
         'open_language_switcher' => 'Open Language Switcher',
@@ -18,5 +18,6 @@ return [
         'open_menu' => 'Open Menu',
         'profile' => 'Profile',
         'title' => 'Menu',
+        'theme' => 'Theme',
     ],
 ];
