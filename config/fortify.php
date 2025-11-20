@@ -144,7 +144,7 @@ return [
     */
 
     'features' => array_filter([
-        Features::registration(),
+        // Features::registration(),
         Features::resetPasswords(),
         env('FORTIFY_ENABLE_EMAIL_VERIFICATION', true) ? Features::emailVerification() : null,
         Features::updateProfileInformation(),
