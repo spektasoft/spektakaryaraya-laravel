@@ -28,9 +28,4 @@
         </h3>
     </a>
 
-    {{-- Description --}}
-    <div class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 leading-relaxed text-center">
-        {!! str($partner->description)->sanitizeHtml()->words(20) !!}
-    </div>
-
 </div>
