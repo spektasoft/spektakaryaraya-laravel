@@ -2,13 +2,13 @@
 
 namespace App\Livewire\Partner;
 
+use App\Concerns\HasProjectsTable;
 use App\Filament\Resources\PartnerResource;
 use App\Models\Partner;
 use Artesaos\SEOTools\Facades\SEOTools;
 use Filament\Actions\Action;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -18,6 +18,7 @@ use Livewire\Component;
 
 class ViewPartner extends Component implements HasForms, HasTable
 {
+    use HasProjectsTable;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -63,34 +64,10 @@ class ViewPartner extends Component implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
-        return $table
+        return $this->configureProjectsTable($table)
             ->query(
                 $this->partner->projects()->getQuery()
-            )
-            ->columns([
-                Tables\Columns\ImageColumn::make('logo.url')
-                    ->label('Logo')
-                    ->circular(),
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Project Name')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('start_date')
-                    ->label('Start Date')
-                    ->date()
-                    ->sortable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\Action::make('view')
-                    ->url(fn ($record) => route('projects.show', $record))
-                    ->icon('heroicon-m-eye'),
-            ])
-            ->bulkActions([
-                //
-            ]);
+            );
     }
 
     public function render(): View
