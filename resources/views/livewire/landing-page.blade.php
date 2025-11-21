@@ -56,7 +56,7 @@
                     {{ __('landing.partners.description') }}
                 </p>
             </div>
-            <livewire:home.partners-table />
+            <livewire:home.partners.partners-table />
         </div>
     </section>
 

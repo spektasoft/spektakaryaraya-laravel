@@ -9,6 +9,7 @@ use Laravel\Jetstream\Jetstream;
 Route::group(['middleware' => ['verified']], function () {
     Route::get('/', \App\Livewire\LandingPage::class)->name('home');
     Route::get('/projects/{project}', \App\Livewire\Project\ViewProject::class)->name('projects.show');
+    Route::get('/partners/{partner}', \App\Livewire\Partner\ViewPartner::class)->name('partners.show');
 
     require __DIR__.'/resources/page.php';
 });
