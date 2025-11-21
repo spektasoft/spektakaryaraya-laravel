@@ -10,6 +10,15 @@ use Artesaos\SEOTools\Facades\SEOTools;
 use Filament\Actions\Action;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Infolists\Components\Actions\Action as InfolistAction;
+use Filament\Infolists\Components\Actions as InfolistActions;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\Split;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Concerns\InteractsWithInfolists;
+use Filament\Infolists\Contracts\HasInfolists;
+use Filament\Infolists\Infolist;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -18,10 +27,11 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
-class ViewProject extends Component implements HasForms, HasTable
+class ViewProject extends Component implements HasForms, HasInfolists, HasTable
 {
     use HasPartnersTable;
     use InteractsWithForms;
+    use InteractsWithInfolists;
     use InteractsWithTable;
 
     public Project $project;
@@ -66,6 +76,49 @@ class ViewProject extends Component implements HasForms, HasTable
             ->url(route('filament.admin.resources.projects.edit', $this->project));
 
         return $actions;
+    }
+
+    public function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->record($this->project)
+            ->schema([
+                Split::make([
+                    Section::make([
+                        TextEntry::make('start_date')
+                            ->hiddenLabel()
+                            ->alignCenter()
+                            ->badge()
+                            ->date('Y')
+                            ->color(fn (Project $record) => match ($record->status) {
+                                Status::Publish => 'primary',
+                                Status::Archive => 'gray',
+                                Status::Draft => 'warning',
+                            }),
+                        ImageEntry::make('logo.url')
+                            ->hiddenLabel()
+                            ->alignCenter()
+                            ->extraImgAttributes(['class' => 'h-32 w-auto object-cover rounded-2xl'])
+                            ->visible(fn (Project $record) => filled($record->logo)),
+                        InfolistActions::make([
+                            InfolistAction::make('visit')
+                                ->label(fn (Project $record) => $record->url)
+                                ->hidden(fn (Project $record) => $record->url === null)
+                                ->icon('heroicon-m-globe-alt')
+                                ->url(fn (Project $record) => $record->url)
+                                ->openUrlInNewTab()
+                                ->button(),
+                        ])->alignCenter()->visible(fn (Project $record) => filled($record->url)),
+                    ])
+                        ->grow(false)
+                        ->compact(),
+                    Section::make([
+                        TextEntry::make('description')
+                            ->hiddenLabel()
+                            ->view('infolists.components.description-entry'),
+                    ]),
+                ])->from('md'),
+            ]);
     }
 
     public function table(Table $table): Table
