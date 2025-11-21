@@ -11,6 +11,7 @@ use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\Components\Tables\CuratorColumn;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -32,13 +33,21 @@ class ProjectResource extends Resource
                 ])->schema([
                     Forms\Components\Group::make([
                         LocalesAwareTranslate::make()
-                            ->schema([
-                                Forms\Components\TextInput::make('name')
-                                    ->label(__('project.resource.name'))
-                                    ->required(),
-                                TiptapEditor::make('description')
-                                    ->label(__('project.resource.description')),
-                            ]),
+                            ->suffixLocaleLabel()
+                            ->schema(function (Get $get) {
+                                /** @var array<string, string|null>|null $names */
+                                $names = $get('name');
+                                $required = collect($names ?? [])->every(fn ($item) => $item === null || trim((string) $item) === '');
+
+                                return [
+                                    Forms\Components\TextInput::make('name')
+                                        ->label(__('project.resource.name'))
+                                        ->lazy()
+                                        ->required($required),
+                                    TiptapEditor::make('description')
+                                        ->label(__('project.resource.description')),
+                                ];
+                            }),
                         Forms\Components\Section::make()
                             ->schema([
                                 Forms\Components\DatePicker::make('start_date')
@@ -70,6 +79,7 @@ class ProjectResource extends Resource
                                     ->default(Status::Draft->value),
                                 CuratorPicker::make('logo_id')
                                     ->label(__('project.resource.logo'))
+                                    ->required()
                                     ->relationship('logo', 'id'),
                             ]),
                     ])->columnSpan([
@@ -103,6 +113,11 @@ class ProjectResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Administration');
     }
 
     public static function getModelLabel(): string
