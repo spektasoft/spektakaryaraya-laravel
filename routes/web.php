@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Jetstream\Jetstream;
 
 Route::group(['middleware' => ['verified']], function () {
-    Route::get('/', \App\Livewire\LandingPage::class)->name('home');
+    Route::get('/', \App\Livewire\Home\Home::class)->name('home');
     Route::get('/projects/{project}', \App\Livewire\Project\ViewProject::class)->name('projects.show');
     Route::get('/partners/{partner}', \App\Livewire\Partner\ViewPartner::class)->name('partners.show');
 
