@@ -13,6 +13,8 @@ class EditPartner extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\ViewAction::make()
+                ->url(fn ($record) => route('partners.show', $record)),
             Actions\DeleteAction::make(),
         ];
     }

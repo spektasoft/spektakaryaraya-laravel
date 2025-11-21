@@ -10,7 +10,7 @@ return [
         'projects' => 'Proyek',
     ],
     'action' => [
-        'edit' => 'Ubah Mitra',
+        'edit' => 'Ubah',
     ],
     'view' => [
         'visit_partner' => 'Kunjungi Mitra',

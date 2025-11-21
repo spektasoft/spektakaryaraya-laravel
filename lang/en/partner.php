@@ -10,7 +10,7 @@ return [
         'projects' => 'Projects',
     ],
     'action' => [
-        'edit' => 'Edit Partner',
+        'edit' => 'Edit',
     ],
     'view' => [
         'visit_partner' => 'Visit Partner',
