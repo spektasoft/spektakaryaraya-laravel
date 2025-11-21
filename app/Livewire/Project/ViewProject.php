@@ -87,7 +87,7 @@ class ViewProject extends Component implements HasForms, HasInfolists, HasTable
                     Section::make([
                         TextEntry::make('start_date')
                             ->hiddenLabel()
-                            ->alignCenter()
+                            ->alignLeft()
                             ->badge()
                             ->date('Y')
                             ->color(fn (Project $record) => match ($record->status) {
@@ -97,8 +97,10 @@ class ViewProject extends Component implements HasForms, HasInfolists, HasTable
                             }),
                         ImageEntry::make('logo.url')
                             ->hiddenLabel()
-                            ->alignCenter()
-                            ->extraImgAttributes(['class' => 'h-32 w-auto object-cover rounded-2xl'])
+                            ->height('100%')
+                            ->extraImgAttributes([
+                                'class' => 'rounded-2xl',
+                            ])
                             ->visible(fn (Project $record) => filled($record->logo)),
                         InfolistActions::make([
                             InfolistAction::make('visit')
