@@ -1,4 +1,8 @@
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans antialiased">
+    <x-header :breadcrumbs="$this->getBreadcrumbs()" :actions="$this->getActions()">
+        {{ $project->name }}
+    </x-header>
+
     {{-- Hero Section --}}
     <div class="relative bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
@@ -14,10 +18,7 @@
                             {{ $project->start_date->format('F Y') }}
                         </span>
                     </div>
-                    <h1
-                        class="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
-                        {{ $project->name }}
-                    </h1>
+
                     @if ($project->url)
                         <div class="mt-6">
                             <a href="{{ $project->url }}" target="_blank" rel="noopener noreferrer"
