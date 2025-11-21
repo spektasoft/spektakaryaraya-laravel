@@ -9,6 +9,15 @@ use Artesaos\SEOTools\Facades\SEOTools;
 use Filament\Actions\Action;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Infolists\Components\Actions;
+use Filament\Infolists\Components\Actions\Action as InfolistAction;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\Split;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Concerns\InteractsWithInfolists;
+use Filament\Infolists\Contracts\HasInfolists;
+use Filament\Infolists\Infolist;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -16,10 +25,11 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
-class ViewPartner extends Component implements HasForms, HasTable
+class ViewPartner extends Component implements HasForms, HasInfolists, HasTable
 {
     use HasProjectsTable;
     use InteractsWithForms;
+    use InteractsWithInfolists;
     use InteractsWithTable;
 
     public Partner $partner;
@@ -60,6 +70,37 @@ class ViewPartner extends Component implements HasForms, HasTable
             ->url(route('filament.admin.resources.partners.edit', $this->partner));
 
         return $actions;
+    }
+
+    public function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->record($this->partner)
+            ->schema([
+                Split::make([
+                    Section::make([
+                        ImageEntry::make('logo.url')
+                            ->hiddenLabel()
+                            ->alignCenter()
+                            ->extraImgAttributes(['class' => 'h-32 w-auto object-cover rounded-2xl']),
+                        Actions::make([
+                            InfolistAction::make('visit')
+                                ->label(fn (Partner $record) => $record->url)
+                                ->icon('heroicon-m-globe-alt')
+                                ->url(fn (Partner $record) => $record->url)
+                                ->openUrlInNewTab()
+                                ->button(),
+                        ])->alignCenter()->visible(fn (Partner $record) => filled($record->url)),
+                    ])
+                        ->grow(false)
+                        ->compact(),
+                    Section::make([
+                        TextEntry::make('description')
+                            ->hiddenLabel()
+                            ->view('infolists.components.description-entry'),
+                    ]),
+                ])->from('md'),
+            ]);
     }
 
     public function table(Table $table): Table
