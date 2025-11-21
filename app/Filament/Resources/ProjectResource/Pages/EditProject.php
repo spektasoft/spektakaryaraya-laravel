@@ -13,6 +13,8 @@ class EditProject extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\ViewAction::make()
+                ->url(fn ($record) => route('projects.show', $record)),
             Actions\DeleteAction::make(),
         ];
     }
