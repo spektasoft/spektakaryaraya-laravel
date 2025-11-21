@@ -81,8 +81,10 @@ class ViewPartner extends Component implements HasForms, HasInfolists, HasTable
                     Section::make([
                         ImageEntry::make('logo.url')
                             ->hiddenLabel()
-                            ->alignCenter()
-                            ->extraImgAttributes(['class' => 'h-32 w-auto object-cover rounded-2xl']),
+                            ->height('100%')
+                            ->extraImgAttributes([
+                                'class' => 'rounded-2xl',
+                            ]),
                         Actions::make([
                             InfolistAction::make('visit')
                                 ->label(fn (Partner $record) => $record->url)
