@@ -9,4 +9,12 @@ return [
         'logo' => 'Logo',
         'projects' => 'Projects',
     ],
+    'action' => [
+        'edit' => 'Edit Partner',
+    ],
+    'view' => [
+        'visit_partner' => 'Visit Partner',
+        'about_partner' => 'About the Partner',
+        'involved_projects' => 'Involved Projects',
+    ],
 ];

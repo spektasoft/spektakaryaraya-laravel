@@ -9,4 +9,12 @@ return [
         'logo' => 'Logo',
         'projects' => 'Proyek',
     ],
+    'action' => [
+        'edit' => 'Ubah Mitra',
+    ],
+    'view' => [
+        'visit_partner' => 'Kunjungi Mitra',
+        'about_partner' => 'Tentang Mitra',
+        'involved_projects' => 'Proyek Terkait',
+    ],
 ];
