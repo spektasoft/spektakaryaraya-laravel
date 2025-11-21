@@ -41,7 +41,7 @@
                     {{ __('landing.projects.description') }}
                 </p>
             </div>
-            <livewire:home.projects-table />
+            <livewire:home.projects.projects-table />
         </div>
     </section>
 
