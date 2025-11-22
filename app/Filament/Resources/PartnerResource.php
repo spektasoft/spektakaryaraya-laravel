@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Actions\Tables\ReferenceAwareDeleteBulkAction;
 use App\Filament\Resources\PartnerResource\Pages;
 use App\Filament\Tables\Columns\TranslatableTextColumn;
 use App\Forms\Components\LocalesAwareTranslate;
@@ -80,10 +81,11 @@ class PartnerResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    ReferenceAwareDeleteBulkAction::make(),
                 ]),
             ]);
     }

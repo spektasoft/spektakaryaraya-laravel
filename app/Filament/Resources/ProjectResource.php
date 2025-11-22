@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Enums\Project\Status;
+use App\Filament\Actions\Tables\ReferenceAwareDeleteBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Tables\Columns\TranslatableTextColumn;
 use App\Forms\Components\LocalesAwareTranslate;
@@ -110,10 +111,11 @@ class ProjectResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    ReferenceAwareDeleteBulkAction::make(),
                 ]),
             ]);
     }
