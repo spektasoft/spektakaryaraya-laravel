@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('partners', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('creator_id')->constrained('users');
+            $table->foreignUlid('logo_id')->nullable()->constrained('media');
             $table->json('name');
             $table->json('description');
             $table->string('url')->nullable();
-            $table->foreignUlid('logo_id')->nullable()->constrained('media')->restrictOnDelete();
             $table->timestamps();
         });
     }

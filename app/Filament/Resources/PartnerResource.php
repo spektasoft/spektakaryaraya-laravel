@@ -4,23 +4,32 @@ namespace App\Filament\Resources;
 
 use App\Filament\Actions\Tables\ReferenceAwareDeleteBulkAction;
 use App\Filament\Resources\PartnerResource\Pages;
+use App\Filament\Resources\UserResource\Utils\Creator;
 use App\Filament\Tables\Columns\TranslatableTextColumn;
 use App\Forms\Components\LocalesAwareTranslate;
 use App\Models\Partner;
+use App\Models\User;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\Components\Tables\CuratorColumn;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use FilamentTiptapEditor\TiptapEditor;
+use Illuminate\Database\Eloquent\Builder;
 
-class PartnerResource extends Resource
+class PartnerResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Partner::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
+
+    public static function canViewAll(): bool
+    {
+        return static::can('viewAll');
+    }
 
     public static function form(Form $form): Form
     {
@@ -56,6 +65,7 @@ class PartnerResource extends Resource
                                     ->label(__('partner.resource.logo'))
                                     ->relationship('logo', 'id'),
                             ]),
+                        Creator::getComponent(static::canViewAll()),
                     ])->columnSpan([
                         'default' => 1,
                         'sm' => 2,
@@ -77,6 +87,10 @@ class PartnerResource extends Resource
                 Tables\Columns\TextColumn::make('url')
                     ->label(__('partner.resource.url'))
                     ->searchable(),
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label(ucfirst(__('validation.attributes.creator')))
+                    ->searchable()
+                    ->visible(static::canViewAll()),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -111,5 +125,35 @@ class PartnerResource extends Resource
     public static function getNavigationGroup(): ?string
     {
         return __('Administration');
+    }
+
+    /**
+     * @return Builder<Partner>
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        /** @var Builder<Partner> */
+        $query = parent::getEloquentQuery();
+
+        if (! static::canViewAll()) {
+            $query->whereCreatorId(User::auth()?->id);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_all',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+        ];
     }
 }

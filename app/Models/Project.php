@@ -37,6 +37,7 @@ class Project extends Model
         'start_date',
         'url',
         'logo_id',
+        'creator_id',
     ];
 
     protected $casts = [
@@ -66,6 +67,14 @@ class Project extends Model
     public function logo(): BelongsTo
     {
         return $this->belongsTo(Media::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function isReferenced(): bool

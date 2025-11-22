@@ -5,11 +5,14 @@ namespace App\Filament\Resources;
 use App\Enums\Project\Status;
 use App\Filament\Actions\Tables\ReferenceAwareDeleteBulkAction;
 use App\Filament\Resources\ProjectResource\Pages;
+use App\Filament\Resources\UserResource\Utils\Creator;
 use App\Filament\Tables\Columns\TranslatableTextColumn;
 use App\Forms\Components\LocalesAwareTranslate;
 use App\Models\Project;
+use App\Models\User;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\Components\Tables\CuratorColumn;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -17,13 +20,19 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use FilamentTiptapEditor\TiptapEditor;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\App;
 
-class ProjectResource extends Resource
+class ProjectResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Project::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
+
+    public static function canViewAll(): bool
+    {
+        return static::can('viewAll');
+    }
 
     public static function form(Form $form): Form
     {
@@ -85,6 +94,7 @@ class ProjectResource extends Resource
                                         ->label(__('project.resource.logo'))
                                         ->relationship('logo', 'id'),
                             ]),
+                        Creator::getComponent(static::canViewAll()),
                     ])->columnSpan([
                         'default' => 1,
                         'sm' => 2,
@@ -107,6 +117,10 @@ class ProjectResource extends Resource
                     ->label(__('project.resource.start_date'))
                     ->date()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label(ucfirst(__('validation.attributes.creator')))
+                    ->searchable()
+                    ->visible(static::canViewAll()),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -140,6 +154,36 @@ class ProjectResource extends Resource
             'index' => Pages\ListProjects::route('/'),
             'create' => Pages\CreateProject::route('/create'),
             'edit' => Pages\EditProject::route('/{record}/edit'),
+        ];
+    }
+
+    /**
+     * @return Builder<Project>
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        /** @var Builder<Project> */
+        $query = parent::getEloquentQuery();
+
+        if (! static::canViewAll()) {
+            $query->whereCreatorId(User::auth()?->id);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_all',
+            'view_any',
+            'create',
+            'update',
+            'delete',
         ];
     }
 }

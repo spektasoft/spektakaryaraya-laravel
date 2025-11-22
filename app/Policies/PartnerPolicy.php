@@ -15,6 +15,10 @@ class PartnerPolicy
      */
     public function view(User $user, Partner $partner): bool
     {
+        if ($user->isNot($partner->creator) && ! $this->viewAll($user)) {
+            return false;
+        }
+
         return $user->can('view_partner');
     }
 
@@ -47,6 +51,10 @@ class PartnerPolicy
      */
     public function update(User $user, Partner $partner): bool
     {
+        if ($user->isNot($partner->creator) && ! $this->viewAll($user)) {
+            return false;
+        }
+
         return $user->can('update_partner');
     }
 
@@ -56,6 +64,10 @@ class PartnerPolicy
     public function delete(User $user, Partner $partner): bool
     {
         if ($partner->isReferenced()) {
+            return false;
+        }
+
+        if ($user->isNot($partner->creator) && ! $this->viewAll($user)) {
             return false;
         }
 

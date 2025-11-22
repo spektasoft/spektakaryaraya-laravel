@@ -23,6 +23,7 @@ class Partner extends Model
         'description',
         'url',
         'logo_id',
+        'creator_id',
     ];
 
     /**
@@ -47,6 +48,14 @@ class Partner extends Model
     public function logo(): BelongsTo
     {
         return $this->belongsTo(Media::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function isReferenced(): bool

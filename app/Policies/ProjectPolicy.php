@@ -15,7 +15,19 @@ class ProjectPolicy
      */
     public function view(User $user, Project $project): bool
     {
+        if ($user->isNot($project->creator) && ! $this->viewAll($user)) {
+            return false;
+        }
+
         return $user->can('view_project');
+    }
+
+    /**
+     * Determine whether the user can view all models.
+     */
+    public function viewAll(User $user): bool
+    {
+        return $user->can('view_all_project');
     }
 
     /**
@@ -39,6 +51,10 @@ class ProjectPolicy
      */
     public function update(User $user, Project $project): bool
     {
+        if ($user->isNot($project->creator) && ! $this->viewAll($user)) {
+            return false;
+        }
+
         return $user->can('update_project');
     }
 
@@ -48,6 +64,10 @@ class ProjectPolicy
     public function delete(User $user, Project $project): bool
     {
         if ($project->isReferenced()) {
+            return false;
+        }
+
+        if ($user->isNot($project->creator) && ! $this->viewAll($user)) {
             return false;
         }
 
