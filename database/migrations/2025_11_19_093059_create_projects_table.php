@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('status');
             $table->date('start_date');
             $table->string('url')->nullable();
-            $table->foreignUlid('logo_id')->constrained('media')->cascadeOnDelete();
+            $table->foreignUlid('logo_id')->constrained('media')->restrictOnDelete();
             $table->timestamps();
         });
     }
