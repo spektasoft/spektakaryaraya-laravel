@@ -16,7 +16,7 @@ return new class extends Migration
             $table->json('name');
             $table->json('description');
             $table->string('url')->nullable();
-            $table->foreignUlid('logo_id')->constrained('media')->restrictOnDelete();
+            $table->foreignUlid('logo_id')->nullable()->constrained('media')->restrictOnDelete();
             $table->timestamps();
         });
     }
