@@ -83,7 +83,6 @@ class ProjectResource extends Resource
                                     ? Forms\Components\Hidden::make('logo_id')
                                     : CuratorPicker::make('logo_id')
                                         ->label(__('project.resource.logo'))
-                                        ->required()
                                         ->relationship('logo', 'id'),
                             ]),
                     ])->columnSpan([
