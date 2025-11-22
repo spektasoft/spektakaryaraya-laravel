@@ -95,6 +95,14 @@ class Media extends CuratorMedia
             return true;
         }
 
+        if ($this->projects()->exists()) {
+            return true;
+        }
+
+        if ($this->partners()->exists()) {
+            return true;
+        }
+
         return false;
     }
 
@@ -104,5 +112,21 @@ class Media extends CuratorMedia
     public function usersWithThisAsProfilePhoto(): HasMany
     {
         return $this->hasMany(User::class, 'profile_photo_media_id');
+    }
+
+    /**
+     * @return HasMany<Project, $this>
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'logo_id');
+    }
+
+    /**
+     * @return HasMany<Partner, $this>
+     */
+    public function partners(): HasMany
+    {
+        return $this->hasMany(Partner::class, 'logo_id');
     }
 }
