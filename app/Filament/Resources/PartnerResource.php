@@ -43,8 +43,7 @@ class PartnerResource extends Resource
                             ->schema([
                                 Forms\Components\TextInput::make('url')
                                     ->label(__('partner.resource.url'))
-                                    ->url()
-                                    ->required(),
+                                    ->url(),
                             ]),
                     ])->columnSpan([
                         'default' => 1,
