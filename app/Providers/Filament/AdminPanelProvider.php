@@ -6,7 +6,9 @@ use App\Colors\Color;
 use App\Filament\Pages\Backups;
 use App\Filament\Resources\MediaResource;
 use App\Filament\Resources\PageResource;
+use App\Filament\Resources\PartnerResource;
 use App\Filament\Resources\PermissionResource;
+use App\Filament\Resources\ProjectResource;
 use App\Filament\Resources\RoleResource;
 use App\Filament\Resources\UserResource;
 use App\Http\Middleware\EnsureEmailIsVerifiedWithFortify;
@@ -105,6 +107,8 @@ class AdminPanelProvider extends PanelProvider
                     ->includes([
                         MediaResource::class,
                         PageResource::class,
+                        PartnerResource::class,
+                        ProjectResource::class,
                         UserResource::class,
                         PermissionResource::class,
                         RoleResource::class,
