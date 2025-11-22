@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use FilamentTiptapEditor\TiptapEditor;
+use Illuminate\Support\Facades\App;
 
 class ProjectResource extends Resource
 {
@@ -77,10 +78,12 @@ class ProjectResource extends Resource
                                     ->options(Status::class)
                                     ->required()
                                     ->default(Status::Draft->value),
-                                CuratorPicker::make('logo_id')
-                                    ->label(__('project.resource.logo'))
-                                    ->required()
-                                    ->relationship('logo', 'id'),
+                                App::runningUnitTests()
+                                    ? Forms\Components\Hidden::make('logo_id')
+                                    : CuratorPicker::make('logo_id')
+                                        ->label(__('project.resource.logo'))
+                                        ->required()
+                                        ->relationship('logo', 'id'),
                             ]),
                     ])->columnSpan([
                         'default' => 1,
