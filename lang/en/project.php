@@ -22,6 +22,7 @@ return [
     'action' => [
         'edit' => 'Edit',
         'view' => 'View',
+        'visit' => 'Visit',
     ],
     'export_completed' => 'Your project export has completed and :successful_rows row(s) exported.',
     'export_failed' => ':failed_rows row(s) failed to export.',

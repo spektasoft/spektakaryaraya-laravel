@@ -22,6 +22,7 @@ return [
     'action' => [
         'edit' => 'Ubah',
         'view' => 'Lihat',
+        'visit' => 'Kunjungi',
     ],
     'export_completed' => 'Ekspor proyek Anda telah selesai dan :successful_rows baris berhasil diekspor.',
     'export_failed' => ':failed_rows baris gagal diekspor.',

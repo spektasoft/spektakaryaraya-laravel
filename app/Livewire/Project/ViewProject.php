@@ -12,9 +12,10 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Infolists\Components\Actions\Action as InfolistAction;
 use Filament\Infolists\Components\Actions as InfolistActions;
+use Filament\Infolists\Components\Entry;
+use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section;
-use Filament\Infolists\Components\Split;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Concerns\InteractsWithInfolists;
 use Filament\Infolists\Contracts\HasInfolists;
@@ -83,7 +84,41 @@ class ViewProject extends Component implements HasForms, HasInfolists, HasTable
         return $infolist
             ->record($this->project)
             ->schema([
-                Split::make([
+                Grid::make([
+                    'default' => 1,
+                    'sm' => 16,
+                ])->schema([
+                    Section::make([
+                        ImageEntry::make('logo.url')
+                            ->hiddenLabel()
+                            ->width('100%')
+                            ->height('auto')
+                            ->extraImgAttributes([
+                                'class' => 'rounded-2xl w-full',
+                            ])
+                            ->visible(fn (Project $record) => filled($record->logo)),
+                        Entry::make('logo_placeholder')
+                            ->hiddenLabel()
+                            ->view('infolists.components.image-placeholder')
+                            ->visible(fn (Project $record) => blank($record->logo)),
+                        InfolistActions::make([
+                            InfolistAction::make('visit')
+                                ->label(__('project.action.visit'))
+                                ->hidden(fn (Project $record) => $record->url === null)
+                                ->icon('heroicon-m-globe-alt')
+                                ->url(fn (Project $record) => $record->url)
+                                ->openUrlInNewTab()
+                                ->button()
+                                ->extraAttributes([
+                                    'class' => 'w-full',
+                                ]),
+                        ])->alignCenter()->visible(fn (Project $record) => filled($record->url)),
+                    ])
+                        ->compact()
+                        ->columnSpan([
+                            'default' => 1,
+                            'sm' => 3,
+                        ]),
                     Section::make([
                         TextEntry::make('start_date')
                             ->hiddenLabel()
@@ -95,31 +130,16 @@ class ViewProject extends Component implements HasForms, HasInfolists, HasTable
                                 Status::Archive => 'gray',
                                 Status::Draft => 'warning',
                             }),
-                        ImageEntry::make('logo.url')
-                            ->hiddenLabel()
-                            ->height('100%')
-                            ->extraImgAttributes([
-                                'class' => 'rounded-2xl',
-                            ])
-                            ->visible(fn (Project $record) => filled($record->logo)),
-                        InfolistActions::make([
-                            InfolistAction::make('visit')
-                                ->label(fn (Project $record) => $record->url)
-                                ->hidden(fn (Project $record) => $record->url === null)
-                                ->icon('heroicon-m-globe-alt')
-                                ->url(fn (Project $record) => $record->url)
-                                ->openUrlInNewTab()
-                                ->button(),
-                        ])->alignCenter()->visible(fn (Project $record) => filled($record->url)),
-                    ])
-                        ->grow(false)
-                        ->compact(),
-                    Section::make([
                         TextEntry::make('description')
                             ->hiddenLabel()
                             ->view('infolists.components.description-entry'),
-                    ]),
-                ])->from('md'),
+                    ])
+                        ->compact()
+                        ->columnSpan([
+                            'default' => 1,
+                            'sm' => 13,
+                        ]),
+                ]),
             ]);
     }
 
