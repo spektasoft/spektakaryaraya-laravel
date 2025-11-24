@@ -11,6 +11,7 @@ return [
     ],
     'action' => [
         'edit' => 'Ubah',
+        'visit' => 'Kunjungi',
     ],
     'view' => [
         'visit_partner' => 'Kunjungi Mitra',

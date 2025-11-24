@@ -11,9 +11,10 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Infolists\Components\Actions;
 use Filament\Infolists\Components\Actions\Action as InfolistAction;
+use Filament\Infolists\Components\Entry;
+use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section;
-use Filament\Infolists\Components\Split;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Concerns\InteractsWithInfolists;
 use Filament\Infolists\Contracts\HasInfolists;
@@ -77,31 +78,51 @@ class ViewPartner extends Component implements HasForms, HasInfolists, HasTable
         return $infolist
             ->record($this->partner)
             ->schema([
-                Split::make([
+                Grid::make([
+                    'default' => 1,
+                    'sm' => 16,
+                ])->schema([
                     Section::make([
                         ImageEntry::make('logo.url')
                             ->hiddenLabel()
-                            ->height('100%')
+                            ->width('100%')
+                            ->height('auto')
                             ->extraImgAttributes([
-                                'class' => 'rounded-2xl',
-                            ]),
+                                'class' => 'rounded-2xl w-full',
+                            ])
+                            ->visible(fn (Partner $record) => filled($record->logo)),
+                        Entry::make('logo_placeholder')
+                            ->hiddenLabel()
+                            ->view('infolists.components.image-placeholder')
+                            ->visible(fn (Partner $record) => blank($record->logo)),
                         Actions::make([
                             InfolistAction::make('visit')
-                                ->label(fn (Partner $record) => $record->url)
+                                ->label(__('partner.action.visit'))
                                 ->icon('heroicon-m-globe-alt')
                                 ->url(fn (Partner $record) => $record->url)
                                 ->openUrlInNewTab()
-                                ->button(),
+                                ->button()
+                                ->extraAttributes([
+                                    'class' => 'w-full',
+                                ]),
                         ])->alignCenter()->visible(fn (Partner $record) => filled($record->url)),
                     ])
-                        ->grow(false)
-                        ->compact(),
+                        ->compact()
+                        ->columnSpan([
+                            'default' => 1,
+                            'sm' => 3,
+                        ]),
                     Section::make([
                         TextEntry::make('description')
                             ->hiddenLabel()
                             ->view('infolists.components.description-entry'),
-                    ]),
-                ])->from('md'),
+                    ])
+                        ->compact()
+                        ->columnSpan([
+                            'default' => 1,
+                            'sm' => 13,
+                        ]),
+                ]),
             ]);
     }
 

@@ -11,6 +11,7 @@ return [
     ],
     'action' => [
         'edit' => 'Edit',
+        'visit' => 'Visit',
     ],
     'view' => [
         'visit_partner' => 'Visit Partner',
