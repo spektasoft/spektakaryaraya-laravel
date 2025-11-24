@@ -6,7 +6,9 @@ use App\Colors\Color;
 use App\Filament\Pages\Backups;
 use App\Filament\Resources\MediaResource;
 use App\Filament\Resources\PageResource;
+use App\Filament\Resources\PartnerResource;
 use App\Filament\Resources\PermissionResource;
+use App\Filament\Resources\ProjectResource;
 use App\Filament\Resources\RoleResource;
 use App\Filament\Resources\UserResource;
 use App\Http\Middleware\EnsureEmailIsVerifiedWithFortify;
@@ -48,8 +50,8 @@ class AdminPanelProvider extends PanelProvider
                 ]),
             ]))
             ->colors([
-                'primary' => Color::Vermilion,
-                'secondary' => Color::WebOrange,
+                'primary' => Color::Copper,
+                'secondary' => Color::Teal,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -105,6 +107,8 @@ class AdminPanelProvider extends PanelProvider
                     ->includes([
                         MediaResource::class,
                         PageResource::class,
+                        PartnerResource::class,
+                        ProjectResource::class,
                         UserResource::class,
                         PermissionResource::class,
                         RoleResource::class,
@@ -133,6 +137,8 @@ class AdminPanelProvider extends PanelProvider
             BLADE))
             ->renderHook(PanelsRenderHook::STYLES_AFTER, fn () => Blade::render(<<<'BLADE'
             @googlefonts('sans')
+            @googlefonts('logo')
+            @googlefonts('heading')
             BLADE))
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => Blade::render('<x-navigation-menu.language-switcher />'))
             ->spa()

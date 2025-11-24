@@ -10,6 +10,8 @@
 
     <!-- Fonts -->
     @googlefonts('sans')
+    @googlefonts('logo')
+    @googlefonts('heading')
 
     <!-- Styles -->
     @filamentStyles

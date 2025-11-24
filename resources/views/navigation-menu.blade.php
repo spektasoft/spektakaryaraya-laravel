@@ -42,6 +42,11 @@
                     <x-navigation-menu.language-switcher />
                 </div>
 
+                <!-- Contact Us -->
+                <div class="relative hidden sm:flex items-center">
+                    <x-navigation-menu.contact-us />
+                </div>
+
                 <!-- Menu -->
                 <div>
                     @guest
