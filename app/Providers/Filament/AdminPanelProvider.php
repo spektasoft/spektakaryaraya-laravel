@@ -137,6 +137,8 @@ class AdminPanelProvider extends PanelProvider
             BLADE))
             ->renderHook(PanelsRenderHook::STYLES_AFTER, fn () => Blade::render(<<<'BLADE'
             @googlefonts('sans')
+            @googlefonts('logo')
+            @googlefonts('heading')
             BLADE))
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => Blade::render('<x-navigation-menu.language-switcher />'))
             ->spa()
