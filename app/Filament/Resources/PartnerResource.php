@@ -139,7 +139,7 @@ class PartnerResource extends Resource implements HasShieldPermissions
             $query->whereCreatorId(User::auth()?->id);
         }
 
-        return $query;
+        return $query->with(['creator']);
     }
 
     /**
