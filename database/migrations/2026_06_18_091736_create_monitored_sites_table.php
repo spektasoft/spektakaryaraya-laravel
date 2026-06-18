@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('monitored_sites', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('creator_id')->constrained('users');
-            $table->foreignUlid('project_id')->constrained();
-            $table->string('name');
+            $table->foreignUlid('project_id')->nullable()->constrained();
+            $table->json('name');
             $table->string('url');
             $table->boolean('is_active')->default(true);
             $table->string('uptime_status')->default('unknown');
