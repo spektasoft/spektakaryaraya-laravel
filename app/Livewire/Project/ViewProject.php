@@ -4,22 +4,23 @@ namespace App\Livewire\Project;
 
 use App\Concerns\HasPartnersTable;
 use App\Enums\Project\Status;
-use App\Filament\Resources\ProjectResource;
+use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Project;
 use Artesaos\SEOTools\Facades\SEOTools;
 use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Infolists\Components\Actions\Action as InfolistAction;
-use Filament\Infolists\Components\Actions as InfolistActions;
 use Filament\Infolists\Components\Entry;
-use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\ImageEntry;
-use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Concerns\InteractsWithInfolists;
 use Filament\Infolists\Contracts\HasInfolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -28,9 +29,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
-class ViewProject extends Component implements HasForms, HasInfolists, HasTable
+class ViewProject extends Component implements HasActions, HasForms, HasInfolists, HasTable
 {
     use HasPartnersTable;
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithInfolists;
     use InteractsWithTable;
@@ -79,9 +81,9 @@ class ViewProject extends Component implements HasForms, HasInfolists, HasTable
         return $actions;
     }
 
-    public function infolist(Infolist $infolist): Infolist
+    public function infolist(Schema $schema): Schema
     {
-        return $infolist
+        return $schema
             ->record($this->project)
             ->schema([
                 Grid::make([
@@ -101,8 +103,8 @@ class ViewProject extends Component implements HasForms, HasInfolists, HasTable
                             ->hiddenLabel()
                             ->view('infolists.components.image-placeholder')
                             ->visible(fn (Project $record) => blank($record->logo)),
-                        InfolistActions::make([
-                            InfolistAction::make('visit')
+                        Actions::make([
+                            Action::make('visit')
                                 ->label(__('project.action.visit'))
                                 ->hidden(fn (Project $record) => $record->url === null)
                                 ->icon('heroicon-m-globe-alt')

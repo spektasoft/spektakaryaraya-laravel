@@ -8,8 +8,8 @@
 
 namespace App\Filament\Actions\Forms;
 
-use Filament\Forms;
-use Filament\Forms\Components\Actions\Action;
+use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
 
 class PasswordConfirmationAction extends Action
 {
@@ -22,8 +22,8 @@ class PasswordConfirmationAction extends Action
             ->modalDescription(
                 __('For your security, please confirm your password to continue.')
             )
-            ->form([
-                Forms\Components\TextInput::make('current_password')
+            ->schema([
+                TextInput::make('current_password')
                     ->label(__('Current Password'))
                     ->required()
                     ->password()

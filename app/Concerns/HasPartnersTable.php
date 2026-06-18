@@ -2,6 +2,7 @@
 
 namespace App\Concerns;
 
+use Filament\Tables\Columns\Layout\View;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -11,7 +12,7 @@ trait HasPartnersTable
     {
         return $table
             ->columns([
-                Tables\Columns\Layout\View::make('components.home.partners.table.index'),
+                View::make('components.home.partners.table.index'),
             ])
             ->contentGrid([
                 'default' => 1,

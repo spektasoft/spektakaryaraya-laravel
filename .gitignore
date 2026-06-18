@@ -6,7 +6,8 @@
 .env.testing
 .phpactor.json
 .phpunit.result.cache
-/.fleet
+/.codex
+/.cursor/
 /.idea
 /.nova
 /.phpunit.cache
@@ -17,13 +18,16 @@
 /auth.json
 /node_modules
 /public/build
+/public/fonts-manifest.dev.json
 /public/css
+/public/fonts
 /public/hot
 /public/js
 /public/storage
 /storage/*.key
 /storage/pail
 /vendor
+_ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db

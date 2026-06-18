@@ -1,4 +1,6 @@
+import tailwindcss from "@tailwindcss/vite";
 import laravel from "laravel-vite-plugin";
+import { bunny } from "laravel-vite-plugin/fonts";
 import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
@@ -9,12 +11,21 @@ export default defineConfig(({ mode }) => {
             hmr: {
                 host: process.env.VITE_HOST,
             },
+            watch: {
+                ignored: ["**/storage/framework/views/**"],
+            },
         },
         plugins: [
             laravel({
                 input: ["resources/css/app.css", "resources/ts/app.ts"],
                 refresh: true,
+                fonts: [
+                    bunny("Instrument Sans", {
+                        weights: [400, 500, 600],
+                    }),
+                ],
             }),
+            tailwindcss(),
         ],
     };
 });

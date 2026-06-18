@@ -9,6 +9,8 @@ use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -38,7 +40,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $password
  * @property ?string $two_factor_secret
  * @property ?string $two_factor_recovery_codes
- * @property ?string $two_factor_confirmed_at
+ * @property ?Carbon $two_factor_confirmed_at
  * @property ?string $remember_token
  * @property ?string $current_team_id
  * @property ?string $profile_photo_path
@@ -61,7 +63,21 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static Builder|User permission($permissions)
  * @method static Builder|User query()
  * @method static Builder|User role($roles, $guard = null)
+ * @method array<int, string> recoveryCodes()
  */
+#[Fillable([
+    'name',
+    'email',
+    'password',
+    'profile_photo_media_id',
+    'email_verified_at',
+])]
+#[Hidden([
+    'password',
+    'remember_token',
+    'two_factor_recovery_codes',
+    'two_factor_secret',
+])]
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
     use HasApiTokens;
@@ -75,31 +91,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     use Notifiable;
     use SuperUserAuthorizable;
     use TwoFactorAuthenticatable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'profile_photo_media_id',
-        'name',
-        'email',
-        'password',
-        'email_verified_at',
-    ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
-    ];
 
     public static function auth(): ?User
     {
@@ -126,6 +117,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 
@@ -168,7 +160,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function getFilamentAvatarUrl(): ?string
     {
         if (Jetstream::managesProfilePhotos() && $this->profilePhotoMedia !== null) {
-            return $this->profilePhotoMedia->getSignedUrl();
+            return $this->profilePhotoMedia->url;
         }
 
         if (! boolval(config('avatar.enabled', false))) {
@@ -178,22 +170,42 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return null;
     }
 
-    public function isReferenced(): bool
+    /**
+     * Get a list of resources preventing account deletion.
+     *
+     * @return array<int, array{label: string, count: int, route: string}>
+     */
+    public function getBlockingResources(): array
     {
-        if ($this->exports()->exists()) {
-            return true;
-        }
-        if ($this->imports()->exists()) {
-            return true;
-        }
-        if ($this->media()->exists()) {
-            return true;
-        }
-        if ($this->pages()->exists()) {
-            return true;
+        $blockers = [];
+
+        $checks = [
+            'pages' => ['label' => trans_choice('page.resource.model_label', 2), 'route' => 'filament.admin.resources.pages.index'],
+            'media' => ['label' => trans_choice('media.resource.model_label', 2), 'route' => 'filament.admin.resources.media.index'],
+            'exports' => ['label' => trans_choice('export.resource.model_label', 2), 'route' => 'filament.admin.resources.exports.index'],
+            'imports' => ['label' => trans_choice('import.resource.model_label', 2), 'route' => 'filament.admin.resources.imports.index'],
+        ];
+
+        foreach ($checks as $relation => $data) {
+            $count = $this->{$relation}()->count();
+            if ($count > 0) {
+                $blockers[] = [
+                    'label' => $data['label'],
+                    'count' => $count,
+                    'route' => route($data['route']),
+                ];
+            }
         }
 
-        return false;
+        return $blockers;
+    }
+
+    public function isReferenced(): bool
+    {
+        return $this->pages()->exists() ||
+            $this->media()->exists() ||
+            $this->exports()->exists() ||
+            $this->imports()->exists();
     }
 
     public function isSuperUser(): bool

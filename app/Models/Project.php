@@ -3,29 +3,32 @@
 namespace App\Models;
 
 use App\Concerns\HandlesTranslatableAttributes;
+use App\Enums\Project\Status;
+use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $name
  * @property string $description
- * @property \App\Enums\Project\Status $status
- * @property \Illuminate\Support\Carbon $start_date
+ * @property Status $status
+ * @property Carbon $start_date
  * @property string|null $url
  * @property string|null $logo_id
- * @property \App\Models\Media|null $logo
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Media|null $logo
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class Project extends Model
 {
     use HandlesTranslatableAttributes;
 
-    /** @use HasFactory<\Database\Factories\ProjectFactory> */
+    /** @use HasFactory<ProjectFactory> */
     use HasFactory;
 
     use HasUlids;
@@ -42,7 +45,7 @@ class Project extends Model
 
     protected $casts = [
         'start_date' => 'date',
-        'status' => \App\Enums\Project\Status::class,
+        'status' => Status::class,
     ];
 
     /**

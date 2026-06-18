@@ -5,6 +5,8 @@ namespace App\Livewire\Home\Projects;
 use App\Concerns\HasProjectsTable;
 use App\Enums\Project\Status;
 use App\Models\Project;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -13,9 +15,10 @@ use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
-class ProjectsTable extends Component implements HasForms, HasTable
+class ProjectsTable extends Component implements HasActions, HasForms, HasTable
 {
     use HasProjectsTable;
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
