@@ -76,7 +76,7 @@ class Project extends Model
     /**
      * @return HasMany<MonitoredSite, $this>
      */
-    public function exports(): HasMany
+    public function monitoredSites(): HasMany
     {
         return $this->hasMany(MonitoredSite::class);
     }
