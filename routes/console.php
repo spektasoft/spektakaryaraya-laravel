@@ -1,8 +1,20 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use App\Jobs\CheckSiteIntegrityJob;
+use App\Jobs\CheckSiteUptimeJob;
+use App\Models\MonitoredSite;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+Schedule::call(function () {
+    MonitoredSite::active()->each(function (MonitoredSite $site) {
+        CheckSiteUptimeJob::dispatch($site);
+    });
+})->everyFiveMinutes();
+
+Schedule::call(function () {
+    MonitoredSite::active()->each(function (MonitoredSite $site) {
+        CheckSiteIntegrityJob::dispatch($site);
+    });
+})->everyTwoHours();
+
+Schedule::command('model:prune')->daily();
