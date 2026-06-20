@@ -6,8 +6,10 @@ use App\Jobs\CheckSiteIntegrityJob;
 use App\Jobs\CheckSiteUptimeJob;
 use App\Models\MonitoredSite;
 use App\Models\User;
+use App\Notifications\MonitoringAlert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class MonitoringJobsTest extends TestCase
@@ -40,10 +42,16 @@ class MonitoringJobsTest extends TestCase
 
     public function test_uptime_job_detects_down_and_records_alerts(): void
     {
-        $admin = User::factory()->create();
+        Notification::fake();
+
+        $adminEmail = 'admin@example.com';
+        config(['auth.super_users' => [$adminEmail]]);
+        $admin = User::factory()->create(['email' => $adminEmail]);
+
         $site = MonitoredSite::factory()->create([
             'url' => 'https://example-uptime-down.com',
             'uptime_status' => 'up',
+            'name' => 'Test Site',
         ]);
 
         Http::fake([
@@ -56,13 +64,11 @@ class MonitoringJobsTest extends TestCase
         $this->assertEquals('down', $site->uptime_status);
         $this->assertEquals(503, $site->last_uptime_code);
 
-        $this->assertDatabaseHas('notifications', [
-            'notifiable_id' => $admin->id,
-            'data->title' => 'Monitoring System Alert',
-            'data->body' => "Website Down Alert: {$site->name} returned code 503.",
-            'data->status' => 'danger',
-            'data->format' => 'filament',
-        ]);
+        Notification::assertSentTo(
+            $admin,
+            MonitoringAlert::class,
+            fn (MonitoringAlert $notification) => $notification->toArray($admin)['title'] === __('monitoring.uptime.alert_title')
+        );
     }
 
     public function test_integrity_job_records_baseline_on_first_scan(): void
@@ -88,7 +94,11 @@ class MonitoringJobsTest extends TestCase
 
     public function test_integrity_job_flags_altered_content_and_links_spike(): void
     {
-        $admin = User::factory()->create();
+        Notification::fake();
+        $adminEmail = 'admin@example.com';
+        config(['auth.super_users' => [$adminEmail]]);
+        $admin = User::factory()->create(['email' => $adminEmail]);
+
         $site = MonitoredSite::factory()->create([
             'url' => 'https://example-integrity-altered.com',
             'expected_md5_hash' => 'pre_computed_md5_hash',
@@ -106,8 +116,10 @@ class MonitoringJobsTest extends TestCase
 
         $site->refresh();
         $this->assertEquals('compromised', $site->integrity_status);
-        $this->assertDatabaseHas('notifications', [
-            'notifiable_id' => $admin->id,
-        ]);
+
+        Notification::assertSentTo(
+            $admin,
+            MonitoringAlert::class
+        );
     }
 }

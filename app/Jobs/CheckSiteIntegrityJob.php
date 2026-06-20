@@ -4,13 +4,14 @@ namespace App\Jobs;
 
 use App\Models\MonitoredSite;
 use App\Models\User;
-use Filament\Notifications\Notification;
+use App\Notifications\MonitoringAlert;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Psr\Http\Message\StreamInterface;
 
 class CheckSiteIntegrityJob implements ShouldQueue
@@ -32,7 +33,7 @@ class CheckSiteIntegrityJob implements ShouldQueue
             ])->get($this->site->url);
 
             if (! $response->successful()) {
-                throw new \Exception('Unsuccessful HTTP Status: '.$response->status());
+                throw new \Exception(__('monitoring.integrity.log_error', ['error' => 'HTTP '.$response->status()]));
             }
 
             /** @var StreamInterface $body */
@@ -52,6 +53,9 @@ class CheckSiteIntegrityJob implements ShouldQueue
 
             if (is_null($this->site->expected_md5_hash)) {
                 $this->site->recalibrateBaseline($content);
+                $this->site->update(['integrity_status' => 'clean']);
+
+                return;
             }
 
             $isHashMismatch = $currentHash !== $this->site->expected_md5_hash;
@@ -106,24 +110,27 @@ class CheckSiteIntegrityJob implements ShouldQueue
             if ($status === 'compromised' && $previousStatus !== 'compromised') {
                 $violations = [];
                 if ($isHashMismatch) {
-                    $violations[] = 'Checksum mismatch';
+                    $violations[] = __('monitoring.integrity.violations.checksum');
                 }
                 if ($linkViolation) {
-                    $violations[] = "Links count spiked ({$currentLinks} vs expected {$this->site->expected_links_count})";
+                    $violations[] = __('monitoring.integrity.violations.links', ['current' => $currentLinks, 'expected' => $this->site->expected_links_count]);
                 }
                 if ($scriptViolation) {
-                    $violations[] = "Scripts count spiked ({$currentScripts} vs expected {$this->site->expected_scripts_count})";
+                    $violations[] = __('monitoring.integrity.violations.scripts', ['current' => $currentScripts, 'expected' => $this->site->expected_scripts_count]);
                 }
 
                 $msg = implode(', ', $violations);
-                $this->notifyAdmins("Security Alert: {$this->site->name} integrity scan failed. Violations: {$msg}");
+                $this->notifyAdmins(
+                    __('monitoring.integrity.alert_title'),
+                    __('monitoring.integrity.alert_body', ['name' => $this->site->name, 'violations' => $msg])
+                );
             }
 
         } catch (\Exception $e) {
             $this->site->update([
                 'integrity_status' => 'unknown',
                 'last_integrity_checked_at' => now(),
-                'last_error' => 'Integrity Check Failure: '.$e->getMessage(),
+                'last_error' => __('monitoring.integrity.log_error', ['error' => $e->getMessage()]),
             ]);
 
             $this->site->logs()->create([
@@ -134,15 +141,16 @@ class CheckSiteIntegrityJob implements ShouldQueue
         }
     }
 
-    protected function notifyAdmins(string $message): void
+    protected function notifyAdmins(string $title, string $message): void
     {
-        $admins = User::all();
-        foreach ($admins as $admin) {
-            Notification::make()
-                ->title('Security System Alert')
-                ->body($message)
-                ->danger()
-                ->sendToDatabase($admin);
+        $superUsers = config('auth.super_users', []);
+
+        if (empty($superUsers)) {
+            return;
         }
+
+        $admins = User::whereIn('email', $superUsers)->get();
+
+        Notification::send($admins, new MonitoringAlert($title, $message));
     }
 }

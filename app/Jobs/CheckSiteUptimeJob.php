@@ -4,13 +4,14 @@ namespace App\Jobs;
 
 use App\Models\MonitoredSite;
 use App\Models\User;
-use Filament\Notifications\Notification;
+use App\Notifications\MonitoringAlert;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 
 class CheckSiteUptimeJob implements ShouldQueue
 {
@@ -41,7 +42,7 @@ class CheckSiteUptimeJob implements ShouldQueue
                 'last_uptime_code' => $statusCode,
                 'last_uptime_checked_at' => now(),
                 'last_uptime_latency' => $latency,
-                'last_error' => $isUp ? null : 'Unsuccessful HTTP Status: '.$statusCode,
+                'last_error' => $isUp ? null : __('monitoring.uptime.log_error', ['code' => $statusCode]),
             ]);
 
             $this->site->logs()->create([
@@ -52,7 +53,10 @@ class CheckSiteUptimeJob implements ShouldQueue
             ]);
 
             if ($status === 'down' && $previousStatus !== 'down') {
-                $this->notifyAdmins("Website Down Alert: {$this->site->name} returned code {$statusCode}.");
+                $this->notifyAdmins(
+                    __('monitoring.uptime.alert_title'),
+                    __('monitoring.uptime.alert_body', ['name' => $this->site->name, 'code' => $statusCode])
+                );
             }
         } catch (\Exception $e) {
             $latency = (int) ((microtime(true) - $startTime) * 1000);
@@ -74,20 +78,24 @@ class CheckSiteUptimeJob implements ShouldQueue
             ]);
 
             if ($previousStatus !== 'down') {
-                $this->notifyAdmins("Website Down Alert: Connection to {$this->site->name} failed. Error: {$e->getMessage()}");
+                $this->notifyAdmins(
+                    __('monitoring.uptime.alert_title'),
+                    __('monitoring.uptime.connection_failed', ['name' => $this->site->name, 'error' => $e->getMessage()])
+                );
             }
         }
     }
 
-    protected function notifyAdmins(string $message): void
+    protected function notifyAdmins(string $title, string $message): void
     {
-        $admins = User::all();
-        foreach ($admins as $admin) {
-            Notification::make()
-                ->title('Monitoring System Alert')
-                ->body($message)
-                ->danger()
-                ->sendToDatabase($admin);
+        $superUsers = config('auth.super_users', []);
+
+        if (empty($superUsers)) {
+            return;
         }
+
+        $admins = User::whereIn('email', $superUsers)->get();
+
+        Notification::send($admins, new MonitoringAlert($title, $message));
     }
 }
