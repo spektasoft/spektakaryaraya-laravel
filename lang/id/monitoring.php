@@ -15,6 +15,7 @@ return [
             'is_active' => 'Status Pemantauan Aktif',
             'project' => 'Proyek Terkait',
             'md5_hash' => 'Checksum MD5 Baseline',
+            'md5_hash_placeholder' => 'Terisi setelah scan pertama',
             'links_count' => 'Jumlah Tautan Baseline',
             'scripts_count' => 'Jumlah Skrip Baseline',
         ],

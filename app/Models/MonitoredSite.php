@@ -89,6 +89,11 @@ class MonitoredSite extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
+    public function isReferenced(): bool
+    {
+        return false;
+    }
+
     /**
      * @return HasMany<MonitoredSiteLog, $this>
      */

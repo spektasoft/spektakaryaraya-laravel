@@ -15,6 +15,7 @@ return [
             'is_active' => 'Active Monitoring Status',
             'project' => 'Associated Project',
             'md5_hash' => 'Baseline MD5 Checksum',
+            'md5_hash_placeholder' => 'Populated upon first scan',
             'links_count' => 'Baseline Link Count',
             'scripts_count' => 'Baseline Script Count',
         ],

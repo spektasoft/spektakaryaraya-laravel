@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Project;
+use App\Models\MonitoredSite;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
@@ -13,9 +13,9 @@ class MonitoredSitePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Project $project): bool
+    public function view(User $user, MonitoredSite $monitoredSite): bool
     {
-        if ($user->isNot($project->creator) && ! $this->viewAll($user)) {
+        if ($user->isNot($monitoredSite->creator) && ! $this->viewAll($user)) {
             return false;
         }
 
@@ -49,9 +49,9 @@ class MonitoredSitePolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Project $project): bool
+    public function update(User $user, MonitoredSite $monitoredSite): bool
     {
-        if ($user->isNot($project->creator) && ! $this->viewAll($user)) {
+        if ($user->isNot($monitoredSite->creator) && ! $this->viewAll($user)) {
             return false;
         }
 
@@ -61,13 +61,13 @@ class MonitoredSitePolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Project $project): bool
+    public function delete(User $user, MonitoredSite $monitoredSite): bool
     {
-        if ($project->isReferenced()) {
+        if ($monitoredSite->isReferenced()) {
             return false;
         }
 
-        if ($user->isNot($project->creator) && ! $this->viewAll($user)) {
+        if ($user->isNot($monitoredSite->creator) && ! $this->viewAll($user)) {
             return false;
         }
 

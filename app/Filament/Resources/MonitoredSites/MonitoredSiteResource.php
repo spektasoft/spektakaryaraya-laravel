@@ -92,31 +92,22 @@ class MonitoredSiteResource extends Resource
                             })
                             ->columnSpanFull()
                             ->suffixLocaleLabel(),
-
                         TextInput::make('url')
                             ->label(__('monitoring.resource.fields.url'))
                             ->url()
                             ->required()
                             ->maxLength(255),
-
                         Select::make('project_id')
                             ->label(__('monitoring.resource.fields.project'))
                             ->relationship('project', 'name')
                             ->searchable()
-                            ->required(),
-
-                        Select::make('creator_id')
-                            ->relationship('creator', 'name')
-                            ->searchable()
-                            ->visible(fn () => Auth::user()?->can('change_creator_monitored::site')),
-
+                            ->preload(),
                         Section::make([
                             Radio::make('status')
                                 ->default(Status::Active)
                                 ->options(Status::class)
                                 ->required(),
                         ])->label(__('monitoring.resource.fields.is_active')),
-
                         Creator::getComponent(static::canViewAll()),
                     ])->columns(2),
 
@@ -125,7 +116,7 @@ class MonitoredSiteResource extends Resource
                         TextInput::make('expected_md5_hash')
                             ->label(__('monitoring.resource.fields.md5_hash'))
                             ->disabled()
-                            ->placeholder('Populated upon first scan'),
+                            ->placeholder(__('monitoring.resource.fields.md5_hash_placeholder')),
                         TextInput::make('expected_links_count')
                             ->label(__('monitoring.resource.fields.links_count'))
                             ->numeric()
@@ -135,7 +126,7 @@ class MonitoredSiteResource extends Resource
                             ->numeric()
                             ->disabled(),
                     ])->columns(3),
-            ]);
+            ])->columns(1);
     }
 
     public static function table(Table $table): Table
