@@ -124,14 +124,36 @@ class MonitoredSite extends Model
      */
     public function recalibrateFromUrl(): void
     {
+        $content = $this->fetchCurrentContent();
+        $this->recalibrateBaseline($content);
+    }
+
+    public function recalibrateBaseline(string $content): void
+    {
+        $normalized = $this->normalizeContent($content);
+
+        $this->expected_md5_hash = md5($normalized);
+        $this->expected_links_count = (int) preg_match_all('/<a[\s>]/i', $content);
+        $this->expected_scripts_count = (int) preg_match_all('/<script[\s>]/i', $content);
+        $this->save();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function fetchCurrentContent(): string
+    {
         $response = Http::withOptions([
             'stream' => true,
             'timeout' => 15,
+            'connect_timeout' => 5,
             'verify' => true,
+        ])->withHeaders([
+            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         ])->get($this->url);
 
         if (! $response->successful()) {
-            throw new \Exception(__('monitoring.resource.actions.notifications.request_failed', ['code' => $response->status()]));
+            throw new \Exception(__('monitoring.integrity.log_error', ['error' => 'HTTP '.$response->status()]));
         }
 
         /** @var StreamInterface $body */
@@ -141,17 +163,23 @@ class MonitoredSite extends Model
         while (! $body->eof() && strlen($content) < 20480) {
             $content .= $body->read(1024);
         }
-
         $body->close();
 
-        $this->recalibrateBaseline($content);
+        return $content;
     }
 
-    public function recalibrateBaseline(string $content): void
+    /**
+     * Removes dynamic parts of HTML that trigger false positive MD5 mismatches.
+     */
+    public function normalizeContent(string $html): string
     {
-        $this->expected_md5_hash = md5($content);
-        $this->expected_links_count = (int) preg_match_all('/<a[\s>]/i', $content);
-        $this->expected_scripts_count = (int) preg_match_all('/<script[\s>]/i', $content);
-        $this->save();
+        // 1. Remove CSRF tokens and other dynamic meta tags
+        $html = (string) preg_replace('/<meta[^>]*name=["\'](csrf-token|revised|updated-at|timestamp)["\'][^>]*content=["\'][^"\']*["\'][^>]*>/i', '', $html);
+
+        // 2. Remove script nonces and common dynamic attributes
+        $html = (string) preg_replace('/\s(nonce|data-v-[a-z0-9]+)=["\'][^"\']*["\']/i', '', $html);
+
+        // 3. Remove all whitespace to prevent formatting differences from breaking the hash
+        return (string) preg_replace('/\s+/', '', $html);
     }
 }

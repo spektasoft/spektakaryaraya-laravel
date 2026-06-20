@@ -87,7 +87,9 @@ class MonitoringJobsTest extends TestCase
 
         $site->refresh();
         $this->assertEquals('clean', $site->integrity_status);
-        $this->assertEquals(md5($html), $site->expected_md5_hash);
+
+        $normalizedHtml = (string) preg_replace('/\s+/', '', $html);
+        $this->assertEquals(md5($normalizedHtml), $site->expected_md5_hash);
         $this->assertEquals(1, $site->expected_links_count);
         $this->assertEquals(0, $site->expected_scripts_count);
     }

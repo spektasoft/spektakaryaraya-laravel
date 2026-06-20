@@ -10,9 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
-use Psr\Http\Message\StreamInterface;
 
 class CheckSiteIntegrityJob implements ShouldQueue
 {
@@ -25,29 +23,10 @@ class CheckSiteIntegrityJob implements ShouldQueue
         $previousStatus = $this->site->integrity_status;
 
         try {
-            $response = Http::withOptions([
-                'stream' => true,
-                'timeout' => 15,
-                'connect_timeout' => 5,
-                'verify' => true,
-            ])->get($this->site->url);
+            $content = $this->site->fetchCurrentContent();
+            $normalized = $this->site->normalizeContent($content);
 
-            if (! $response->successful()) {
-                throw new \Exception(__('monitoring.integrity.log_error', ['error' => 'HTTP '.$response->status()]));
-            }
-
-            /** @var StreamInterface $body */
-            $body = $response->toPsrResponse()->getBody();
-
-            $content = '';
-            // Read in chunks up to 20KB
-            while (! $body->eof() && strlen($content) < 20480) {
-                $chunk = $body->read(1024);
-                $content .= (string) $chunk;
-            }
-            $body->close();
-
-            $currentHash = md5($content);
+            $currentHash = md5($normalized);
             $currentLinks = preg_match_all('/<a[\s>]/i', $content);
             $currentScripts = preg_match_all('/<script[\s>]/i', $content);
 
