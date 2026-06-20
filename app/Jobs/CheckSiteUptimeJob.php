@@ -31,6 +31,14 @@ class CheckSiteUptimeJob implements ShouldQueue
                 'verify' => true,
             ])->head($this->site->url);
 
+            if (in_array($response->status(), [403, 405])) {
+                $response = Http::withOptions([
+                    'timeout' => 10,
+                    'connect_timeout' => 5,
+                    'verify' => true,
+                ])->get($this->site->url);
+            }
+
             $latency = (int) ((microtime(true) - $startTime) * 1000);
             $statusCode = $response->status();
             $isUp = $response->successful();
@@ -53,7 +61,7 @@ class CheckSiteUptimeJob implements ShouldQueue
             ]);
 
             if ($status === 'down' && $previousStatus !== 'down') {
-                $this->notifyAdmins(
+                $this->notifyStakeholders(
                     __('monitoring.uptime.alert_title'),
                     __('monitoring.uptime.alert_body', ['name' => $this->site->name, 'code' => $statusCode])
                 );
@@ -78,7 +86,7 @@ class CheckSiteUptimeJob implements ShouldQueue
             ]);
 
             if ($previousStatus !== 'down') {
-                $this->notifyAdmins(
+                $this->notifyStakeholders(
                     __('monitoring.uptime.alert_title'),
                     __('monitoring.uptime.connection_failed', ['name' => $this->site->name, 'error' => $e->getMessage()])
                 );
@@ -86,16 +94,24 @@ class CheckSiteUptimeJob implements ShouldQueue
         }
     }
 
-    protected function notifyAdmins(string $title, string $message): void
+    protected function notifyStakeholders(string $title, string $message): void
     {
-        $superUsers = config('auth.super_users', []);
+        $recipients = collect();
 
-        if (empty($superUsers)) {
-            return;
+        if ($this->site->creator) {
+            $recipients->push($this->site->creator);
         }
 
-        $admins = User::whereIn('email', $superUsers)->get();
+        $superUsers = config('auth.super_users', []);
+        if (! empty($superUsers)) {
+            $admins = User::whereIn('email', $superUsers)->get();
+            $recipients = $recipients->merge($admins);
+        }
 
-        Notification::send($admins, new MonitoringAlert($title, $message));
+        $recipients = $recipients->unique('id');
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new MonitoringAlert($title, $message));
+        }
     }
 }

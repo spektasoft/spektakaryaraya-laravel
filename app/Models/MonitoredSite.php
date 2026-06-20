@@ -160,7 +160,7 @@ class MonitoredSite extends Model
         $body = $response->toPsrResponse()->getBody();
         $content = '';
 
-        while (! $body->eof() && strlen($content) < 20480) {
+        while (! $body->eof() && strlen($content) < 2097152) {
             $content .= $body->read(1024);
         }
         $body->close();

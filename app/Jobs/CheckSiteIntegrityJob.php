@@ -31,6 +31,9 @@ class CheckSiteIntegrityJob implements ShouldQueue
             $currentScripts = preg_match_all('/<script[\s>]/i', $content);
 
             if (is_null($this->site->expected_md5_hash)) {
+                if (strlen(trim($content)) < 100) {
+                    throw new \Exception('Failed to capture initial baseline: content length is too short.');
+                }
                 $this->site->recalibrateBaseline($content);
                 $this->site->update(['integrity_status' => 'clean']);
 
@@ -39,25 +42,8 @@ class CheckSiteIntegrityJob implements ShouldQueue
 
             $isHashMismatch = $currentHash !== $this->site->expected_md5_hash;
 
-            $linkViolation = false;
-            if ($this->site->expected_links_count > 0) {
-                $increaseRatio = $currentLinks / $this->site->expected_links_count;
-                if ($increaseRatio > 1.5) {
-                    $linkViolation = true;
-                }
-            } elseif ($currentLinks > 5) {
-                $linkViolation = true;
-            }
-
-            $scriptViolation = false;
-            if ($this->site->expected_scripts_count > 0) {
-                $increaseRatio = $currentScripts / $this->site->expected_scripts_count;
-                if ($increaseRatio > 1.5) {
-                    $scriptViolation = true;
-                }
-            } elseif ($currentScripts > 5) {
-                $scriptViolation = true;
-            }
+            $linkViolation = $currentLinks > $this->site->expected_links_count;
+            $scriptViolation = $currentScripts > $this->site->expected_scripts_count;
 
             $isCompromised = $isHashMismatch || $linkViolation || $scriptViolation;
             $status = $isCompromised ? 'compromised' : 'clean';
@@ -99,7 +85,7 @@ class CheckSiteIntegrityJob implements ShouldQueue
                 }
 
                 $msg = implode(', ', $violations);
-                $this->notifyAdmins(
+                $this->notifyStakeholders(
                     __('monitoring.integrity.alert_title'),
                     __('monitoring.integrity.alert_body', ['name' => $this->site->name, 'violations' => $msg])
                 );
@@ -120,16 +106,24 @@ class CheckSiteIntegrityJob implements ShouldQueue
         }
     }
 
-    protected function notifyAdmins(string $title, string $message): void
+    protected function notifyStakeholders(string $title, string $message): void
     {
-        $superUsers = config('auth.super_users', []);
+        $recipients = collect();
 
-        if (empty($superUsers)) {
-            return;
+        if ($this->site->creator) {
+            $recipients->push($this->site->creator);
         }
 
-        $admins = User::whereIn('email', $superUsers)->get();
+        $superUsers = config('auth.super_users', []);
+        if (! empty($superUsers)) {
+            $admins = User::whereIn('email', $superUsers)->get();
+            $recipients = $recipients->merge($admins);
+        }
 
-        Notification::send($admins, new MonitoringAlert($title, $message));
+        $recipients = $recipients->unique('id');
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new MonitoringAlert($title, $message));
+        }
     }
 }

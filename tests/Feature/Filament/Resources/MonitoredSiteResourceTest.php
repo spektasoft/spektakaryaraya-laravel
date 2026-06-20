@@ -21,6 +21,8 @@ class MonitoredSiteResourceTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $user;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -38,6 +40,8 @@ class MonitoredSiteResourceTest extends TestCase
             Permission::firstOrCreate(['name' => $permission]);
             $user->givePermissionTo($permission);
         }
+
+        $this->user = $user;
     }
 
     public function test_can_access_list_monitored_sites_page(): void
@@ -68,7 +72,9 @@ class MonitoredSiteResourceTest extends TestCase
 
     public function test_can_update_monitored_site_via_form(): void
     {
-        $site = MonitoredSite::factory()->create();
+        $site = MonitoredSite::factory()->create([
+            'creator_id' => $this->user->id,
+        ]);
 
         Livewire::test(EditMonitoredSite::class, ['record' => $site->getRouteKey()])
             ->fillForm([
@@ -90,6 +96,7 @@ class MonitoredSiteResourceTest extends TestCase
         ]);
 
         $site = MonitoredSite::factory()->create([
+            'creator_id' => $this->user->id,
             'url' => 'https://example.com/site',
         ]);
 
@@ -98,5 +105,21 @@ class MonitoredSiteResourceTest extends TestCase
             ->assertHasNoTableActionErrors();
 
         Http::assertSent(fn (Request $request) => $request->url() === $site->url);
+    }
+
+    public function test_regular_user_can_only_see_their_own_created_sites(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        $userSite = MonitoredSite::factory()->create(['creator_id' => $user->id]);
+        $otherSite = MonitoredSite::factory()->create(['creator_id' => $otherUser->id]);
+
+        $this->actingAs($user);
+
+        $results = MonitoredSiteResource::getEloquentQuery()->get();
+
+        $this->assertTrue($results->contains($userSite));
+        $this->assertFalse($results->contains($otherSite));
     }
 }
