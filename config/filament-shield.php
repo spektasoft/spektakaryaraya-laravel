@@ -4,6 +4,7 @@ declare(strict_types=1);
 use App\Filament\Resources\Exports\ExportResource;
 use App\Filament\Resources\Imports\ImportResource;
 use App\Filament\Resources\Media\MediaResource;
+use App\Filament\Resources\MonitoredSites\MonitoredSiteResource;
 use App\Filament\Resources\Pages\PageResource;
 use App\Filament\Resources\Partners\PartnerResource;
 use App\Filament\Resources\Permissions\PermissionResource;
@@ -214,6 +215,14 @@ return [
                 'delete',
             ],
             ProjectResource::class => [
+                'view',
+                'view_all',
+                'view_any',
+                'create',
+                'update',
+                'delete',
+            ],
+            MonitoredSiteResource::class => [
                 'view',
                 'view_all',
                 'view_any',
