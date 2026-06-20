@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\HandlesTranslatableAttributes;
+use App\Enums\MonitoredSite\Status;
 use Database\Factories\MonitoredSiteFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,13 +13,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * @property int $id
  * @property Project $project
  * @property string $name
  * @property string $url
- * @property bool $is_active
+ * @property Status $status
  * @property string $uptime_status
  * @property int|null $last_uptime_code
  * @property Carbon|null $last_uptime_checked_at
@@ -36,10 +39,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable([
+    'creator_id',
     'project_id',
     'name',
     'url',
-    'is_active',
+    'status',
     'uptime_status',
     'last_uptime_code',
     'last_uptime_checked_at',
@@ -57,10 +61,18 @@ use Illuminate\Support\Carbon;
 class MonitoredSite extends Model
 {
     use HandlesTranslatableAttributes;
+
     /** @use HasFactory<MonitoredSiteFactory> */
     use HasFactory;
 
     use HasUlids;
+
+    /**
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'status' => Status::class,
+    ];
 
     /**
      * @var string[]
@@ -99,7 +111,35 @@ class MonitoredSite extends Model
      */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true);
+        return $query->where('status', Status::Active);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function recalibrateFromUrl(): void
+    {
+        $response = Http::withOptions([
+            'stream' => true,
+            'timeout' => 15,
+            'verify' => true,
+        ])->get($this->url);
+
+        if (! $response->successful()) {
+            throw new \Exception(__('monitoring.resource.actions.notifications.request_failed', ['code' => $response->status()]));
+        }
+
+        /** @var StreamInterface $body */
+        $body = $response->toPsrResponse()->getBody();
+        $content = '';
+
+        while (! $body->eof() && strlen($content) < 20480) {
+            $content .= $body->read(1024);
+        }
+
+        $body->close();
+
+        $this->recalibrateBaseline($content);
     }
 
     public function recalibrateBaseline(string $content): void

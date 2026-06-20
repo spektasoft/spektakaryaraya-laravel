@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignUlid('project_id')->nullable()->constrained();
             $table->json('name');
             $table->string('url');
-            $table->boolean('is_active')->default(true);
+            $table->string('status');
             $table->string('uptime_status')->default('unknown');
             $table->integer('last_uptime_code')->nullable();
             $table->dateTime('last_uptime_checked_at')->nullable();

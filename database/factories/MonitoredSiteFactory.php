@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\MonitoredSite\Status;
 use App\Models\MonitoredSite;
 use App\Models\Project;
 use App\Models\User;
@@ -21,7 +22,7 @@ class MonitoredSiteFactory extends Factory
             'project_id' => Project::factory(),
             'name' => ['en' => $this->faker->domainName()],
             'url' => $this->faker->url(),
-            'is_active' => true,
+            'status' => Status::Active,
             'uptime_status' => 'unknown',
             'integrity_status' => 'unknown',
         ];
