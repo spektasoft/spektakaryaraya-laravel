@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Models;
 
+use App\Enums\MonitoredSite\Status;
 use App\Models\MonitoredSite;
 use App\Models\MonitoredSiteLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,22 +16,24 @@ class MonitoredSiteTest extends TestCase
     {
         /** @var MonitoredSite $site */
         $site = MonitoredSite::factory()->create();
-        $sampleHtml = '<html><head><title>Title</title></head><body><a href="1">Link 1</a><a href="2">Link 2</a><script>console.log("1");</script></body></html>';
+        $sampleHtml = '<html><body><h1>Test</h1><a href="/link1">Link 1</a><a href="/link2">Link 2</a><script src="test.js"></script></body></html>';
 
         $site->recalibrateBaseline($sampleHtml);
 
         $site->refresh();
-        $this->assertEquals(md5($sampleHtml), $site->expected_md5_hash);
+        // The model normalizes content (removing whitespace) before hashing
+        $normalized = $site->normalizeContent($sampleHtml);
+        $this->assertEquals(md5($normalized), $site->expected_md5_hash);
         $this->assertEquals(2, $site->expected_links_count);
         $this->assertEquals(1, $site->expected_scripts_count);
     }
 
-    public function test_active_scope_only_returns_active_sites(): void
+    public function test_active_scope_returns_only_active_sites(): void
     {
-        MonitoredSite::factory()->create(['is_active' => true]);
-        MonitoredSite::factory()->create(['is_active' => false]);
+        MonitoredSite::factory()->count(3)->create(['status' => Status::Active]);
+        MonitoredSite::factory()->count(2)->create(['status' => Status::Disabled]);
 
-        $this->assertCount(1, MonitoredSite::active()->get());
+        $this->assertEquals(3, MonitoredSite::active()->count());
     }
 
     public function test_pruning_removes_old_logs(): void

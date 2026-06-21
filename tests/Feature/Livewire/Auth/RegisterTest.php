@@ -18,12 +18,20 @@ class RegisterTest extends TestCase
 
     public function test_register_can_be_rendered(): void
     {
+        if (! Features::enabled(Features::registration())) {
+            $this->markTestSkipped('Registration support is not enabled.');
+        }
+
         Livewire::test(Register::class)
             ->assertStatus(200);
     }
 
     public function test_register_form_has_proper_attributes(): void
     {
+        if (! Features::enabled(Features::registration())) {
+            $this->markTestSkipped('Registration support is not enabled.');
+        }
+
         $testable = Livewire::test(Register::class);
         $testable->assertFormExists();
         $testable->assertFormFieldExists('name');
@@ -82,24 +90,32 @@ class RegisterTest extends TestCase
 
     public function test_name_and_email_fields_repopulate_on_validation_error(): void
     {
+        if (! Features::enabled(Features::registration())) {
+            $this->markTestSkipped('Registration support is not enabled.');
+        }
+
         $response = $this->post('/register', [
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'password' => 'password',
             'password_confirmation' => 'not-matching-password',
-            'terms' => \Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
         ]);
 
         $response->assertSessionHasErrors(['password']);
         $response->assertSessionHas('_old_input', [
             'name' => 'John Doe',
             'email' => 'john@example.com',
-            'terms' => \Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
         ]);
     }
 
     public function test_honeypot_field_is_present(): void
     {
+        if (! Features::enabled(Features::registration())) {
+            $this->markTestSkipped('Registration support is not enabled.');
+        }
+
         $response = $this->get('/register');
         /** @var string */
         $honeypotFieldName = config('honeypot.name_field_name');

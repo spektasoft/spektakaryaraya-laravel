@@ -10,6 +10,7 @@ use App\Models\Permission;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -26,6 +27,7 @@ class ProjectResourceTest extends TestCase
         // Create and assign permissions
         $permissions = [
             'view_any_project',
+            'view_all_project',
             'create_project',
             'update_project',
             'delete_project',
@@ -70,9 +72,13 @@ class ProjectResourceTest extends TestCase
 
     public function test_can_update_project(): void
     {
+        /** @var User $user */
+        $user = Auth::user();
+
         $media = Media::factory()->create();
         $project = Project::factory()->create([
             'logo_id' => $media->id,
+            'creator_id' => $user->id,
         ]);
         $newPartner = Partner::factory()->create();
 

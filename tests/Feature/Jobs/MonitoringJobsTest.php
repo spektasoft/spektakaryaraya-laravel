@@ -78,9 +78,9 @@ class MonitoringJobsTest extends TestCase
             'expected_md5_hash' => null,
         ]);
 
-        $html = '<html><head><title>Secure Page</title></head><body><a href="/login">Link</a></body></html>';
+        $html = '<html><head><title>Secure Page</title><meta name="description" content="This is a long enough description to satisfy the 100 character requirement for baseline capture."></head><body><a href="/login">Link</a></body></html>';
         Http::fake([
-            'example-integrity-baseline.com' => Http::response($html, 200),
+            $site->url => Http::response($html, 200),
         ]);
 
         CheckSiteIntegrityJob::dispatchSync($site);

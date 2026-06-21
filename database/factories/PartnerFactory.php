@@ -2,10 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\Media;
+use App\Models\Partner;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Partner>
+ * @extends Factory<Partner>
  */
 class PartnerFactory extends Factory
 {
@@ -20,7 +23,8 @@ class PartnerFactory extends Factory
             'name' => ['en' => $this->faker->company(), 'id' => $this->faker->company()],
             'description' => ['en' => $this->faker->paragraph(), 'id' => $this->faker->paragraph()],
             'url' => $this->faker->url(),
-            'logo_id' => \App\Models\Media::factory(),
+            'logo_id' => Media::factory(),
+            'creator_id' => User::factory(),
         ];
     }
 }

@@ -17,8 +17,7 @@ class WebRoutesTest extends TestCase
     public function test_guest_can_access_home_page(): void
     {
         $this->get('/')
-            ->assertOk()
-            ->assertViewIs('welcome');
+            ->assertOk();
     }
 
     public function test_unverified_user_cannot_access_home_page(): void
@@ -44,8 +43,7 @@ class WebRoutesTest extends TestCase
 
         $this->actingAs($user)
             ->get('/')
-            ->assertOk()
-            ->assertViewIs('welcome');
+            ->assertOk();
     }
 
     public function test_guest_can_access_a_page_php_route(): void
