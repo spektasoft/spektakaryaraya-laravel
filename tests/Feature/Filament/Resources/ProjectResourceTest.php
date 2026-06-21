@@ -4,6 +4,7 @@ namespace Tests\Feature\Filament\Resources;
 
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
+use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Media;
 use App\Models\Partner;
 use App\Models\Permission;
@@ -99,5 +100,21 @@ class ProjectResourceTest extends TestCase
         $this->assertCount(1, $project->partners);
         $this->assertNotNull($project->partners->first());
         $this->assertEquals($newPartner->id, $project->partners->first()->id);
+    }
+
+    public function test_regular_user_can_only_see_their_own_created_projects(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        $userProject = Project::factory()->create(['creator_id' => $user->id]);
+        $otherProject = Project::factory()->create(['creator_id' => $otherUser->id]);
+
+        $this->actingAs($user);
+
+        $results = ProjectResource::getEloquentQuery()->get();
+
+        $this->assertTrue($results->contains($userProject));
+        $this->assertFalse($results->contains($otherProject));
     }
 }
