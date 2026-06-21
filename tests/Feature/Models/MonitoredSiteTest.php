@@ -3,14 +3,25 @@
 namespace Tests\Feature\Models;
 
 use App\Enums\MonitoredSite\Status;
+use App\Jobs\CheckSiteIntegrityJob;
 use App\Models\MonitoredSite;
 use App\Models\MonitoredSiteLog;
+use App\Models\Project;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class MonitoredSiteTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Http::fake();
+    }
 
     public function test_can_recalibrate_baseline(): void
     {
@@ -30,6 +41,8 @@ class MonitoredSiteTest extends TestCase
 
     public function test_active_scope_returns_only_active_sites(): void
     {
+        Bus::fake();
+
         MonitoredSite::factory()->count(3)->create(['status' => Status::Active]);
         MonitoredSite::factory()->count(2)->create(['status' => Status::Disabled]);
 
@@ -38,6 +51,8 @@ class MonitoredSiteTest extends TestCase
 
     public function test_pruning_removes_old_logs(): void
     {
+        Bus::fake();
+
         /** @var MonitoredSite $site */
         $site = MonitoredSite::factory()->create();
 
@@ -59,5 +74,26 @@ class MonitoredSiteTest extends TestCase
 
         $this->assertDatabaseHas('monitored_site_logs', ['id' => $newLog->id]);
         $this->assertDatabaseMissing('monitored_site_logs', ['id' => $oldLog->id]);
+    }
+
+    public function test_it_dispatches_integrity_job_on_creation(): void
+    {
+        Bus::fake();
+
+        $user = User::factory()->create();
+        $project = Project::factory()->create();
+
+        $site = MonitoredSite::create([
+            'creator_id' => $user->id,
+            'project_id' => $project->id,
+            'name' => ['en' => 'Test Site'],
+            'url' => 'https://example.com',
+            'status' => Status::Active,
+        ]);
+
+        $this->assertEquals('pending', $site->integrity_status);
+        Bus::assertDispatched(CheckSiteIntegrityJob::class, function (CheckSiteIntegrityJob $job) use ($site) {
+            return $job->site->id === $site->id;
+        });
     }
 }

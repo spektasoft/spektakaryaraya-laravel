@@ -195,10 +195,19 @@ class MonitoredSiteResource extends Resource
                 Tables\Columns\TextColumn::make('integrity_status')
                     ->label(__('monitoring.resource.columns.integrity'))
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'clean' => 'success',
                         'compromised' => 'danger',
+                        'pending' => 'warning',
+                        'unknown' => 'gray',
                         default => 'gray',
+                    })
+                    ->icon(fn (?string $state): string => match ($state) {
+                        'clean' => 'heroicon-o-check-circle',
+                        'compromised' => 'heroicon-o-exclamation-triangle',
+                        'pending' => 'heroicon-o-clock',
+                        'unknown' => 'heroicon-o-question-mark-circle',
+                        default => 'heroicon-o-question-mark-circle',
                     }),
                 Tables\Columns\TextColumn::make('last_uptime_latency')
                     ->label(__('monitoring.resource.columns.latency'))

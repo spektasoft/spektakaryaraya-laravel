@@ -24,7 +24,7 @@ class MonitoredSiteFactory extends Factory
             'url' => $this->faker->url(),
             'status' => Status::Active,
             'uptime_status' => 'unknown',
-            'integrity_status' => 'unknown',
+            'integrity_status' => 'pending',
         ];
     }
 }

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('last_uptime_code')->nullable();
             $table->dateTime('last_uptime_checked_at')->nullable();
             $table->integer('last_uptime_latency')->nullable();
-            $table->string('integrity_status')->default('unknown');
+            $table->string('integrity_status')->default('pending');
             $table->dateTime('last_integrity_checked_at')->nullable();
             $table->string('expected_md5_hash')->nullable();
             $table->string('last_md5_hash')->nullable();

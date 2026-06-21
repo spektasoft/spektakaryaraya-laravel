@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\HandlesTranslatableAttributes;
 use App\Enums\MonitoredSite\Status;
+use App\Jobs\CheckSiteIntegrityJob;
 use Database\Factories\MonitoredSiteFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -66,6 +67,20 @@ class MonitoredSite extends Model
     use HasFactory;
 
     use HasUlids;
+
+    /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'integrity_status' => 'pending',
+    ];
+
+    protected static function booted(): void
+    {
+        static::created(function (MonitoredSite $site) {
+            CheckSiteIntegrityJob::dispatch($site);
+        });
+    }
 
     /**
      * @var array<string, string>
