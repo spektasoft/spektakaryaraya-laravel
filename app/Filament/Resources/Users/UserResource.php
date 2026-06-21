@@ -133,7 +133,7 @@ class UserResource extends Resource
                 CuratorColumn::make('profile_photo_media_id')
                     ->label(__('Photo'))
                     ->circular()
-                    ->size(32) : null,
+                    ->imageSize(32) : null,
                 TextColumn::make('name')
                     ->label(__('Name'))
                     ->searchable(),

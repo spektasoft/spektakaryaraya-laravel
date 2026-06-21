@@ -119,7 +119,7 @@ class ProjectResource extends Resource
         return $table
             ->columns([
                 CuratorColumn::make('logo')
-                    ->size(40),
+                    ->imageSize(40),
                 TranslatableTextColumn::make('name')
                     ->label(__('project.resource.name'))
                     ->searchable()
