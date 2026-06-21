@@ -25,6 +25,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class MonitoredSiteResource extends Resource
 {
@@ -131,13 +132,16 @@ class MonitoredSiteResource extends Resource
             ->label(__('monitoring.resource.actions.check_now'))
             ->icon('heroicon-o-play')
             ->color('success')
-            ->action(function (MonitoredSite $record) {
+            ->action(function (MonitoredSite $record, Component $livewire) {
                 CheckSiteUptimeJob::dispatchSync($record);
                 CheckSiteIntegrityJob::dispatchSync($record);
+
                 Notification::make()
                     ->title(__('monitoring.resource.actions.notifications.check_success'))
                     ->success()
                     ->send();
+
+                $livewire->redirect(request()->header('Referer'), true);
             });
     }
 
@@ -148,7 +152,7 @@ class MonitoredSiteResource extends Resource
             ->icon('heroicon-o-arrow-path')
             ->color('warning')
             ->requiresConfirmation()
-            ->action(function (MonitoredSite $record) {
+            ->action(function (MonitoredSite $record, Component $livewire) {
                 try {
                     $record->recalibrateFromUrl();
 
@@ -156,6 +160,8 @@ class MonitoredSiteResource extends Resource
                         ->title(__('monitoring.resource.actions.notifications.recalibrate_success'))
                         ->success()
                         ->send();
+
+                    $livewire->redirect(request()->header('Referer'), true);
                 } catch (\Exception $e) {
                     Notification::make()
                         ->title($e->getMessage())
