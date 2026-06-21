@@ -78,7 +78,19 @@ class MonitoringJobsTest extends TestCase
             'expected_md5_hash' => null,
         ]);
 
-        $html = '<html><head><title>Secure Page</title><meta name="description" content="This is a long enough description to satisfy the 100 character requirement for baseline capture."></head><body><a href="/login">Link</a></body></html>';
+        // 1. Add some mock external assets to the HTML
+        $html = '<html>
+            <head>
+                <title>Secure Page</title>
+                <meta name="description" content="This is a long enough description to satisfy the 100 character requirement for baseline capture.">
+                <link rel="stylesheet" href="/css/app.css?id=123">
+                <script src="/js/app.js"></script>
+            </head>
+            <body>
+                <a href="/login">Link</a>
+            </body>
+        </html>';
+
         Http::fake([
             $site->url => Http::response($html, 200),
         ]);
@@ -88,10 +100,12 @@ class MonitoringJobsTest extends TestCase
         $site->refresh();
         $this->assertEquals('clean', $site->integrity_status);
 
-        $normalizedHtml = (string) preg_replace('/\s+/', '', $html);
-        $this->assertEquals(md5($normalizedHtml), $site->expected_md5_hash);
+        // 2. The expected normalized string should contain only the sorted, cleaned assets
+        $expectedNormalizedAssets = "/css/app.css\n/js/app.js";
+
+        $this->assertEquals(md5($expectedNormalizedAssets), $site->expected_md5_hash);
         $this->assertEquals(1, $site->expected_links_count);
-        $this->assertEquals(0, $site->expected_scripts_count);
+        $this->assertEquals(1, $site->expected_scripts_count); // 1 script is now present
     }
 
     public function test_integrity_job_flags_altered_content_and_links_spike(): void

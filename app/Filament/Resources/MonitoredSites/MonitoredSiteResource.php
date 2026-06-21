@@ -125,6 +125,46 @@ class MonitoredSiteResource extends Resource
             ])->columns(1);
     }
 
+    public static function getCheckNowAction(): Action
+    {
+        return Action::make('checkNow')
+            ->label(__('monitoring.resource.actions.check_now'))
+            ->icon('heroicon-o-play')
+            ->color('success')
+            ->action(function (MonitoredSite $record) {
+                CheckSiteUptimeJob::dispatchSync($record);
+                CheckSiteIntegrityJob::dispatchSync($record);
+                Notification::make()
+                    ->title(__('monitoring.resource.actions.notifications.check_success'))
+                    ->success()
+                    ->send();
+            });
+    }
+
+    public static function getRecalibrateAction(): Action
+    {
+        return Action::make('recalibrate')
+            ->label(__('monitoring.resource.actions.recalibrate'))
+            ->icon('heroicon-o-arrow-path')
+            ->color('warning')
+            ->requiresConfirmation()
+            ->action(function (MonitoredSite $record) {
+                try {
+                    $record->recalibrateFromUrl();
+
+                    Notification::make()
+                        ->title(__('monitoring.resource.actions.notifications.recalibrate_success'))
+                        ->success()
+                        ->send();
+                } catch (\Exception $e) {
+                    Notification::make()
+                        ->title($e->getMessage())
+                        ->danger()
+                        ->send();
+                }
+            });
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -168,38 +208,8 @@ class MonitoredSiteResource extends Resource
             ->filters([])
             ->recordActions([
                 EditAction::make(),
-                Action::make('checkNow')
-                    ->label(__('monitoring.resource.actions.check_now'))
-                    ->icon('heroicon-o-play')
-                    ->color('success')
-                    ->action(function (MonitoredSite $record) {
-                        CheckSiteUptimeJob::dispatchSync($record);
-                        CheckSiteIntegrityJob::dispatchSync($record);
-                        Notification::make()
-                            ->title(__('monitoring.resource.actions.notifications.check_success'))
-                            ->success()
-                            ->send();
-                    }),
-                Action::make('recalibrate')
-                    ->label(__('monitoring.resource.actions.recalibrate'))
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('warning')
-                    ->requiresConfirmation()
-                    ->action(function (MonitoredSite $record) {
-                        try {
-                            $record->recalibrateFromUrl();
-
-                            Notification::make()
-                                ->title(__('monitoring.resource.actions.notifications.recalibrate_success'))
-                                ->success()
-                                ->send();
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-                    }),
+                static::getCheckNowAction(),
+                static::getRecalibrateAction(),
             ])
             ->toolbarActions([
                 ActionGroup::make([

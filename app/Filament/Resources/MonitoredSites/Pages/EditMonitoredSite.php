@@ -13,6 +13,8 @@ class EditMonitoredSite extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            MonitoredSiteResource::getCheckNowAction(),
+            MonitoredSiteResource::getRecalibrateAction(),
             Actions\DeleteAction::make(),
         ];
     }

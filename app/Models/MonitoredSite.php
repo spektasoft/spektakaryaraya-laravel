@@ -135,6 +135,12 @@ class MonitoredSite extends Model
         $this->expected_md5_hash = md5($normalized);
         $this->expected_links_count = (int) preg_match_all('/<a[\s>]/i', $content);
         $this->expected_scripts_count = (int) preg_match_all('/<script[\s>]/i', $content);
+
+        $this->integrity_status = 'clean';
+        $this->last_md5_hash = $this->expected_md5_hash;
+        $this->last_integrity_checked_at = now();
+        $this->last_error = null;
+
         $this->save();
     }
 
@@ -168,18 +174,30 @@ class MonitoredSite extends Model
         return $content;
     }
 
-    /**
-     * Removes dynamic parts of HTML that trigger false positive MD5 mismatches.
-     */
     public function normalizeContent(string $html): string
     {
-        // 1. Remove CSRF tokens and other dynamic meta tags
-        $html = (string) preg_replace('/<meta[^>]*name=["\'](csrf-token|revised|updated-at|timestamp)["\'][^>]*content=["\'][^"\']*["\'][^>]*>/i', '', $html);
+        $assets = [];
 
-        // 2. Remove script nonces and common dynamic attributes
-        $html = (string) preg_replace('/\s(nonce|data-v-[a-z0-9]+)=["\'][^"\']*["\']/i', '', $html);
+        // 1. Extract all script sources, accounting for variations in whitespace and quotes
+        if (preg_match_all('/<script[^>]+src\s*=\s*["\']?([^"\'\s>]+)["\']?/i', $html, $matches)) {
+            $assets = array_merge($assets, $matches[1]);
+        }
 
-        // 3. Remove all whitespace to prevent formatting differences from breaking the hash
-        return (string) preg_replace('/\s+/', '', $html);
+        // 2. Extract all link destinations (stylesheets, preloads, icons)
+        if (preg_match_all('/<link[^>]+href\s*=\s*["\']?([^"\'\s>]+)["\']?/i', $html, $matches)) {
+            $assets = array_merge($assets, $matches[1]);
+        }
+
+        // 3. Normalize URLs by stripping cache-busting parameters (anything after '?')
+        $assets = array_map(function ($url) {
+            return strtok($url, '?');
+        }, $assets);
+
+        // 4. Remove empty paths, discard duplicates, and sort alphabetically for consistency
+        $assets = array_filter(array_unique($assets));
+        sort($assets);
+
+        // 5. Return a clean, carriage-return delimited list of files for hashing
+        return implode("\n", $assets);
     }
 }
