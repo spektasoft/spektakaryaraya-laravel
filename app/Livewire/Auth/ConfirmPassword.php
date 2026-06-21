@@ -2,21 +2,24 @@
 
 namespace App\Livewire\Auth;
 
-use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Components\Section;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 /**
- * @property Form $form
+ * @property Schema $form
  */
-class ConfirmPassword extends Component implements HasForms
+class ConfirmPassword extends Component implements HasActions, HasForms
 {
+    use InteractsWithActions;
     use InteractsWithForms;
 
     /**
@@ -29,10 +32,10 @@ class ConfirmPassword extends Component implements HasForms
         $this->form->fill();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make()
                     ->description(__('This is a secure area of the application. Please confirm your password before continuing.'))
                     ->schema([

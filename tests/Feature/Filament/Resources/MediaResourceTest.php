@@ -2,13 +2,17 @@
 
 namespace Tests\Feature\Filament\Resources;
 
-use App\Filament\Resources\MediaResource;
+use App\Filament\Resources\Media\MediaResource;
+use App\Filament\Resources\Media\Pages\ListMedia;
 use App\Models\Media;
 use App\Models\Permission;
 use App\Models\User;
-use Awcodes\Curator\Resources\MediaResource\CreateMedia;
+use Awcodes\Curator\Resources\Media\Pages\CreateMedia;
+use Filament\Facades\Filament;
+use Filament\GlobalSearch\GlobalSearchResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -82,5 +86,46 @@ class MediaResourceTest extends TestCase
         ]);
         $livewire->call('create');
         $livewire->assertHasErrors(['data.creator_id']);
+    }
+
+    public function test_can_filter_media_by_creator(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        Permission::firstOrCreate(['name' => 'view_all_media']);
+        $user->givePermissionTo('view_all_media');
+
+        $media = Media::factory()->create(['creator_id' => $user->id]);
+        $otherMedia = Media::factory()->create();
+
+        Livewire::test(ListMedia::class)
+            ->assertCanSeeTableRecords([$media, $otherMedia])
+            ->filterTable('creator', $user->id)
+            ->assertCanSeeTableRecords([$media])
+            ->assertCanNotSeeTableRecords([$otherMedia]);
+    }
+
+    public function test_media_global_search_is_configured_correctly(): void
+    {
+        $user = User::factory()->create();
+        Media::factory()->create([
+            'name' => 'test-image.jpg',
+            'title' => 'Stunning Landscape',
+            'creator_id' => $user->id,
+        ]);
+
+        $this->actingAs($user);
+
+        /** @var Collection<string|int, mixed> */
+        $results = Filament::getGlobalSearchProvider()
+            ?->getResults('Landscape')
+            ?->getCategories()
+            ->get(MediaResource::getPluralModelLabel(), collect());
+
+        $this->assertCount(1, $results);
+        /** @var GlobalSearchResult */
+        $first = $results->first();
+        $this->assertEquals('Stunning Landscape', $first->title);
     }
 }

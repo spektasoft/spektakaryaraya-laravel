@@ -2,14 +2,16 @@
 
 namespace Tests\Feature\Filament\Resources;
 
-use App\Filament\Resources\ProjectResource\Pages\CreateProject;
-use App\Filament\Resources\ProjectResource\Pages\EditProject;
+use App\Filament\Resources\Projects\Pages\CreateProject;
+use App\Filament\Resources\Projects\Pages\EditProject;
+use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Media;
 use App\Models\Partner;
 use App\Models\Permission;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -26,6 +28,7 @@ class ProjectResourceTest extends TestCase
         // Create and assign permissions
         $permissions = [
             'view_any_project',
+            'view_all_project',
             'create_project',
             'update_project',
             'delete_project',
@@ -70,9 +73,13 @@ class ProjectResourceTest extends TestCase
 
     public function test_can_update_project(): void
     {
+        /** @var User $user */
+        $user = Auth::user();
+
         $media = Media::factory()->create();
         $project = Project::factory()->create([
             'logo_id' => $media->id,
+            'creator_id' => $user->id,
         ]);
         $newPartner = Partner::factory()->create();
 
@@ -93,5 +100,21 @@ class ProjectResourceTest extends TestCase
         $this->assertCount(1, $project->partners);
         $this->assertNotNull($project->partners->first());
         $this->assertEquals($newPartner->id, $project->partners->first()->id);
+    }
+
+    public function test_regular_user_can_only_see_their_own_created_projects(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        $userProject = Project::factory()->create(['creator_id' => $user->id]);
+        $otherProject = Project::factory()->create(['creator_id' => $otherUser->id]);
+
+        $this->actingAs($user);
+
+        $results = ProjectResource::getEloquentQuery()->get();
+
+        $this->assertTrue($results->contains($userProject));
+        $this->assertFalse($results->contains($otherProject));
     }
 }

@@ -198,7 +198,7 @@ class TwoFactorChallengeControllerTest extends TestCase
         foreach (range(0, $limit) as $i) {
             $response = $this->postJson(route('api.v1.two-factor-challenge'), [
                 'login_id' => $loginId,
-                'code' => '123456',
+                'code' => 'invalid-code',
                 'recovery_code' => '',
                 'device_name' => 'device_name',
             ]);

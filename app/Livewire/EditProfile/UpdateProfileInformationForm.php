@@ -4,24 +4,28 @@ namespace App\Livewire\EditProfile;
 
 use App\Concerns\HasUser;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
-use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Components\Section;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 use Laravel\Fortify\Features;
 use Laravel\Jetstream\Jetstream;
 use Livewire\Component;
 
 /**
- * @property Form $form
+ * @property Schema $form
  */
-class UpdateProfileInformationForm extends Component implements HasForms
+class UpdateProfileInformationForm extends Component implements HasActions, HasForms
 {
     use HasUser;
+    use InteractsWithActions;
     use InteractsWithForms;
 
     /**
@@ -29,10 +33,10 @@ class UpdateProfileInformationForm extends Component implements HasForms
      */
     public ?array $data = [];
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make()
                     ->heading(__('Profile Information'))
                     ->description(__('Update your account\'s profile information and email address.'))
@@ -102,10 +106,25 @@ class UpdateProfileInformationForm extends Component implements HasForms
     {
         $this->resetErrorBag();
 
-        $updater->update(
-            $this->user,
-            $this->form->getState()
-        );
+        $state = $this->form->getState();
+
+        try {
+            $updater->update(
+                $this->user,
+                $state
+            );
+        } catch (ValidationException $e) {
+            throw ValidationException::withMessages(
+                collect($e->errors())
+                    ->mapWithKeys(fn ($messages, $key) => ["data.{$key}" => $messages])
+                    ->all()
+            );
+        }
+
+        // Refresh data in form to reflect normalized values (e.g. lowercased email)
+        /** @var ?array<string, mixed> */
+        $freshUserArray = $this->user->fresh()?->toArray();
+        $this->form->fill($freshUserArray);
 
         $this->dispatch('refresh-navigation-menu');
 

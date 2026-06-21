@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\HandlesTranslatableAttributes;
+use Database\Factories\PartnerFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,7 @@ class Partner extends Model
 {
     use HandlesTranslatableAttributes;
 
-    /** @use HasFactory<\Database\Factories\PartnerFactory> */
+    /** @use HasFactory<PartnerFactory> */
     use HasFactory;
 
     use HasUlids;

@@ -2,10 +2,14 @@
 
 namespace Database\Factories;
 
+use App\Enums\Project\Status;
+use App\Models\Media;
+use App\Models\Project;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Project>
+ * @extends Factory<Project>
  */
 class ProjectFactory extends Factory
 {
@@ -17,12 +21,13 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
+            'creator_id' => User::factory(),
             'name' => ['en' => $this->faker->sentence(3), 'id' => $this->faker->sentence(3)],
             'description' => ['en' => $this->faker->paragraph(), 'id' => $this->faker->paragraph()],
-            'status' => $this->faker->randomElement(\App\Enums\Project\Status::cases()),
+            'status' => $this->faker->randomElement(Status::cases()),
             'start_date' => $this->faker->date(),
             'url' => $this->faker->url(),
-            'logo_id' => \App\Models\Media::factory(),
+            'logo_id' => Media::factory(),
         ];
     }
 }

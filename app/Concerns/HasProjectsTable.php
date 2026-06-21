@@ -2,7 +2,7 @@
 
 namespace App\Concerns;
 
-use Filament\Tables;
+use Filament\Tables\Columns\Layout\View;
 use Filament\Tables\Table;
 
 trait HasProjectsTable
@@ -17,7 +17,7 @@ trait HasProjectsTable
                 'lg' => 4,
             ])
             ->columns([
-                Tables\Columns\Layout\View::make('components.home.projects.table.index'),
+                View::make('components.home.projects.table.index'),
             ]);
     }
 }

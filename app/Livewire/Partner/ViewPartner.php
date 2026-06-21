@@ -3,22 +3,23 @@
 namespace App\Livewire\Partner;
 
 use App\Concerns\HasProjectsTable;
-use App\Filament\Resources\PartnerResource;
+use App\Filament\Resources\Partners\PartnerResource;
 use App\Models\Partner;
 use Artesaos\SEOTools\Facades\SEOTools;
 use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Infolists\Components\Actions;
-use Filament\Infolists\Components\Actions\Action as InfolistAction;
 use Filament\Infolists\Components\Entry;
-use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\ImageEntry;
-use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Concerns\InteractsWithInfolists;
 use Filament\Infolists\Contracts\HasInfolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -26,9 +27,10 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
-class ViewPartner extends Component implements HasForms, HasInfolists, HasTable
+class ViewPartner extends Component implements HasActions, HasForms, HasInfolists, HasTable
 {
     use HasProjectsTable;
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithInfolists;
     use InteractsWithTable;
@@ -73,9 +75,9 @@ class ViewPartner extends Component implements HasForms, HasInfolists, HasTable
         return $actions;
     }
 
-    public function infolist(Infolist $infolist): Infolist
+    public function infolist(Schema $schema): Schema
     {
-        return $infolist
+        return $schema
             ->record($this->partner)
             ->schema([
                 Grid::make([
@@ -96,7 +98,7 @@ class ViewPartner extends Component implements HasForms, HasInfolists, HasTable
                             ->view('infolists.components.image-placeholder')
                             ->visible(fn (Partner $record) => blank($record->logo)),
                         Actions::make([
-                            InfolistAction::make('visit')
+                            Action::make('visit')
                                 ->label(__('partner.action.visit'))
                                 ->icon('heroicon-m-globe-alt')
                                 ->url(fn (Partner $record) => $record->url)

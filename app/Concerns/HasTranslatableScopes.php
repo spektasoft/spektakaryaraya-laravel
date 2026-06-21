@@ -2,6 +2,7 @@
 
 namespace App\Concerns;
 
+use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
@@ -30,13 +31,14 @@ trait HasTranslatableScopes
             $locales = static::getSortedLocales();
             $search = strtolower($search);
 
-            /** @var \Illuminate\Database\Connection $connection */
+            /** @var Connection $connection */
             $connection = $query->getConnection();
             $grammar = $connection->getQueryGrammar();
             $driver = $connection->getDriverName();
             $isPostgres = $driver === 'pgsql';
 
             foreach ($locales as $locale) {
+                /** @var literal-string */
                 $wrappedColumn = $grammar->wrap($column);
 
                 // IMPORTANT: The PostgreSQL query below is currently untested.
@@ -45,10 +47,12 @@ trait HasTranslatableScopes
                 // Until then, this functionality for PostgreSQL users is experimental and unverified.
                 if ($isPostgres) {
                     // PostgreSQL syntax: "LOWER(column->>'locale') LIKE ?"
+                    /** @var literal-string $locale */
                     $query->orWhereRaw("LOWER({$wrappedColumn}->>?) LIKE ?", [$locale, "%{$search}%"]);
                 } else {
                     // MySQL/MariaDB syntax: "LOWER(column->>'$."locale"') LIKE ?"
                     // Note the quotes around the JSON path key.
+                    /** @var literal-string $locale */
                     $query->orWhereRaw("LOWER({$wrappedColumn}->>\"$.{$locale}\") LIKE ?", ["%{$search}%"]);
                 }
             }

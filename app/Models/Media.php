@@ -4,17 +4,24 @@ namespace App\Models;
 
 use App\Observers\MediaObserver;
 use Awcodes\Curator\Models\Media as CuratorMedia;
+use Database\Factories\MediaFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
 /**
  * @property string $id
+ * @property string|null $url
+ * @property string|null $thumbnail_url
+ * @property string|null $medium_url
+ * @property string|null $large_url
  * @property string $disk
  * @property string $path
  * @property string $creator_id
@@ -35,18 +42,20 @@ use Illuminate\Support\Facades\Gate;
  * @property array<string, mixed>|null $curations
  * @property string $size_for_humans
  * @property string $pretty_name
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  *
- * @method static \Database\Factories\MediaFactory factory(...$parameters)
+ * @method static MediaFactory factory(...$parameters)
  */
 #[ObservedBy([MediaObserver::class])]
 class Media extends CuratorMedia
 {
-    /** @use HasFactory<\Database\Factories\MediaFactory> */
+    /** @use HasFactory<MediaFactory> */
     use HasFactory;
 
     use HasUlids;
+
+    protected $table = 'media';
 
     protected static function booted()
     {
@@ -75,18 +84,14 @@ class Media extends CuratorMedia
     }
 
     /**
-     * @return User
+     * @return Attribute<array<string, string>|null, array<string, string>|null>
      */
-    public function getCreatorAttribute()
+    protected function exif(): Attribute
     {
-        if (! $this->relationLoaded('creator')) {
-            $this->load('creator');
-        }
-
-        /** @var User */
-        $creator = $this->getRelation('creator');
-
-        return $creator;
+        return Attribute::make(
+            get: fn ($value) => ! is_string($value) ? null : json_decode($value, true),
+            set: fn ($value) => is_null($value) ? null : json_encode($value),
+        );
     }
 
     public function isReferenced(): bool
